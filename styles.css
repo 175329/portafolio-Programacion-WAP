@@ -137,9 +137,12 @@ main { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
    HEADER
    ========================================================= */
 .site-header{
+  position: sticky;
+  top: 0;
   z-index: 50;
-  background: var(--paper-dark);
-  border-bottom: 2px solid var(--ink);
+  background: rgba(3, 3, 3, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-line);
 }
 .header-top {
   max-width: var(--max-width);
@@ -211,7 +214,7 @@ main { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
 /* =========================================================
    STACK
    ========================================================= */
-.stack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
 .stack-card { background: var(--bg-panel); border: 1px solid var(--border-line); border-radius: 8px; padding: 24px; transition: 0.3s; }
 .stack-card:hover { transform: translateY(-5px); border-color: var(--cyan); box-shadow: 0 8px 20px rgba(0,240,255,0.1); }
 .stack-label { display: block; font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-bright); margin-bottom: 16px; text-transform: uppercase; }
