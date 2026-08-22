@@ -16,6 +16,6 @@ Lo subo a un repo en GitHub y activo Pages (Settings → Pages → Deploy from b
 - Las claves de ambos van en `script.js`; mientras no las ponga, esa parte se desactiva sola sin tronar el resto.
 
 ## Pendiente antes de entregar
-- Poner mi correo y links reales en el footer.
-- Configurar el Worker (token + chat_id) y EmailJS.
-- Probar en móvil y confirmar el candado 🔒 en la URL final.
+- Poner mi correo y links reales en el footer. ✓
+- Configurar el Worker (token + chat_id) y EmailJS. ✓
+- Probar en móvil y confirmar el candado 🔒 en la URL final. ✓
