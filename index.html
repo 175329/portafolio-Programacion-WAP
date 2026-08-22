@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>csnv :: Portafolio — Seguridad Informática</title>
+<meta name="description" content="Portafolio digital de Juan Pablo Casanova De La Madrid (csnv) para la asignatura CNO IV — Seguridad Informática, UPSLP.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2310161e%22/><text x=%2250%22 y=%2266%22 font-size=%2255%22 fill=%22%23e8a33d%22 font-family=%22monospace%22 text-anchor=%22middle%22>&gt;_</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!--  HEADER  -->
+<header class="site-header">
+  <span class="washi-tape tape-header" aria-hidden="true"></span>
+  <div class="header-top">
+    <a class="logo" href="#inicio" aria-label="Inicio del portafolio">
+      <span class="logo-mark">csnv</span><span class="logo-dim">— Portafolio</span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Abrir menú de navegación">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+      <ul>
+        <li><a href="#inicio" class="active">Inicio</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Sobre mí</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Proyectos</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Certificaciones</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Bitácora</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="header-meta">
+    <div class="meta-item"><span class="meta-label">Estudiante</span>Juan Pablo Casanova De La Madrid <span class="meta-alias">alias csnv</span></div>
+    <div class="meta-item"><span class="meta-label">Asignatura</span>CNO IV — Seguridad Informática</div>
+    <div class="meta-item"><span class="meta-label">Institución</span>Universidad Politécnica de San Luis Potosí</div>
+    <div class="meta-item"><span class="meta-label">Periodo</span>7° semestre</div>
+  </div>
+</header>
+
+<main id="inicio">
+
+  <!--  HERO / PORTADA DEL EXPEDIENTE  -->
+  <section class="hero">
+    <div class="event-card reveal">
+      <span class="stamp" aria-hidden="true">ACTIVO</span>
+      <div class="event-card-bar">
+        <span class="event-id">Ficha n.º 001</span>
+        <span class="event-level">Nivel 3 · informativo</span>
+        <span class="event-ts" id="liveTimestamp">Fecha: —</span>
+      </div>
+      <div class="event-card-body">
+        <p class="eyebrow">expediente csnv · upslp — sección: bienvenida</p>
+        <h1>Portafolio digital de<br><span class="accent">Seguridad Informática</span></h1>
+        <p class="lede">
+          Bitácora técnica y académica de evidencias para CNO IV, construida con el mismo
+          principio de trazabilidad que aplico monitoreando alertas en producción: cada
+          entrega queda registrada, documentada y disponible para su revisión.
+        </p>
+        <div class="hero-actions">
+          <a href="#presentacion" class="btn btn-primary">Ver presentación</a>
+          <a href="#contacto" class="btn btn-ghost">Abrir contacto</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!--  PRESENTACIÓN  -->
+  <section id="presentacion" class="section">
+    <p class="section-eyebrow">01 · Presentación del portafolio</p>
+    <h2>¿Qué es este sitio?</h2>
+    <div class="panel reveal">
+      <p>
+        Este portafolio digital funciona como el contenedor oficial de evidencias del curso
+        <strong>CNO IV — Seguridad Informática</strong>, cursado en la Universidad Politécnica
+        de San Luis Potosí. Aquí documentaré de forma progresiva el trabajo realizado en
+        <strong>pruebas de penetración</strong>, <strong>análisis de vulnerabilidades</strong> y
+        <strong>defensa de infraestructura</strong>, desde reportes técnicos hasta proyectos
+        prácticos desarrollados a lo largo del cuatrimestre.
+      </p>
+      <p>
+        Más que una entrega puntual, busca ser un registro auditable de mi proceso de
+        aprendizaje: cada apartado se irá completando conforme avance el curso, aplicando el
+        mismo estándar de orden y documentación que utilizo a diario administrando
+        infraestructura de monitoreo y respuesta a incidentes.
+      </p>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!--  PERFIL  -->
+  <section id="perfil" class="section section-alt">
+    <p class="section-eyebrow">02 · Perfil del estudiante</p>
+    <h2>Sobre mí, en breve</h2>
+    <div class="profile-grid">
+      <div class="panel reveal">
+        <p>
+          Soy <strong>Juan Pablo Casanova De La Madrid</strong>, alias <strong>csnv</strong>,
+          estudiante de Ingeniería en tecnologías de la información en la UPSLP y practicante en el área de
+          seguridad informática del <strong>IPICyT / CNS</strong>, donde colaboro en tareas de
+          monitoreo, respuesta a incidentes y hardening de infraestructura.
+        </p>
+        <p>
+          Fuera del aula administro un stack SIEM basado en <strong>Wazuh</strong>, con
+          integraciones de <strong>CrowdSec</strong>, <strong>Fail2ban</strong> y
+          automatización de alertas. Tengo especial afinidad por la ciberseguridad ofensiva
+          y defensiva, el análisis de vulnerabilidades y la investigación aplicada.
+        </p>
+      </div>
+      <div class="tag-panel reveal">
+        <span class="tag-panel-title">Intereses</span>
+        <ul class="tag-list">
+          <li>Seguridad informática</li>
+          <li>Ciberseguridad ofensiva</li>
+          <li>Ciberseguridad defensiva / SOC</li>
+          <li>Análisis de vulnerabilidades</li>
+          <li>Investigación aplicada</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!--  STACK TÉCNICO  -->
+  <section id="stack" class="section">
+    <p class="section-eyebrow">03 · Información técnica</p>
+    <h2>Cómo está construido este sitio</h2>
+    <div class="stack-grid reveal">
+      <div class="stack-card">
+        <span class="stack-label">Lenguajes / tecnologías</span>
+        <div class="badge-row">
+          <span class="badge">HTML5</span>
+          <span class="badge">CSS3</span>
+          <span class="badge">JavaScript</span>
+        </div>
+      </div>
+      <div class="stack-card">
+        <span class="stack-label">Plataforma de publicación</span>
+        <div class="badge-row"><span class="badge">GitHub Pages</span></div>
+      </div>
+      <div class="stack-card">
+        <span class="stack-label">Control de versiones</span>
+        <div class="badge-row"><span class="badge">Git</span><span class="badge">GitHub</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!--  ESTADO DEL EXPEDIENTE  -->
+  <section id="estado" class="section section-alt">
+    <p class="section-eyebrow">04 · Estado del expediente</p>
+    <h2>Fichas del portafolio</h2>
+    <p class="section-note">
+      Cada apartado es una ficha más del expediente, pinchada en el corcho conforme se va
+      completando. Este primer parcial deja activas <strong>Inicio</strong> y
+      <strong>Contacto</strong>; el resto se irá llenando en los siguientes parciales.
+    </p>
+    <div class="agent-grid reveal">
+      <article class="agent-card is-online">
+        <header><h3>Inicio</h3><span class="agent-status">ACTIVA</span></header>
+        <p>Portada técnica y presentación del portafolio.</p>
+      </article>
+      <article class="agent-card">
+        <header><h3>Sobre mí</h3><span class="agent-status">PENDIENTE</span></header>
+        <p>Semblanza extendida, trayectoria y habilidades.</p>
+      </article>
+      <article class="agent-card">
+        <header><h3>Proyectos</h3><span class="agent-status">PENDIENTE</span></header>
+        <p>Evidencias de laboratorios y proyectos del curso.</p>
+      </article>
+      <article class="agent-card">
+        <header><h3>Certificaciones</h3><span class="agent-status">PENDIENTE</span></header>
+        <p>Cursos, insignias y constancias.</p>
+      </article>
+      <article class="agent-card">
+        <header><h3>Bitácora</h3><span class="agent-status">PENDIENTE</span></header>
+        <p>Notas técnicas y writeups de investigación.</p>
+      </article>
+      <article class="agent-card is-online">
+        <header><h3>Contacto</h3><span class="agent-status">ACTIVA</span></header>
+        <p>Formulario de contacto con respuesta automática.</p>
+      </article>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!--  CONTACTO  -->
+  <section id="contacto" class="section">
+    <p class="section-eyebrow">05 · Contacto</p>
+    <h2>Abrir un reporte</h2>
+    <p class="section-note">
+      ¿Dudas, retroalimentación o propuestas de colaboración? Completa el formulario y
+      recibirás una respuesta automática de confirmación; te responderé personalmente
+      lo antes posible.
+    </p>
+
+    <form id="contactForm" class="contact-form panel reveal" novalidate>
+      <div class="form-row">
+        <div class="field">
+          <label for="name">Nombre</label>
+          <input type="text" id="name" name="name" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="email">Correo</label>
+          <input type="email" id="email" name="email" autocomplete="email" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="subject">Asunto</label>
+        <input type="text" id="subject" name="subject" required>
+      </div>
+      <div class="field">
+        <label for="message">Mensaje</label>
+        <textarea id="message" name="message" rows="5" required></textarea>
+      </div>
+
+      <div class="form-footer">
+        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar reporte</button>
+        <span class="form-status" id="formStatus" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>
+
+</main>
+
+<!--  FOOTER  -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">csnv <span class="logo-dim">— expediente</span></div>
+    <div class="footer-links">
+      <a href="mailto:175329@upslp.edu.mx">Correo</a>
+      <a href="https://github.com/175329" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> Juan Pablo Casanova De La Madrid — csnv. CNO IV, UPSLP.</span>
+    <span class="ssl-badge" title="Sitio servido bajo HTTPS mediante GitHub Pages">sello ssl · https</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
