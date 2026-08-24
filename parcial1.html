@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parcial 1 — csnv :: Portafolio</title>
+<meta name="description" content="Tareas entregadas en el Parcial 1 del portafolio de Juan Pablo Casanova De La Madrid (csnv), CNO IV — Seguridad Informática, UPSLP.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2310161e%22/><text x=%2250%22 y=%2266%22 font-size=%2255%22 fill=%22%23e8a33d%22 font-family=%22monospace%22 text-anchor=%22middle%22>&gt;_</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!--  HEADER  -->
+<header class="site-header">
+  <span class="washi-tape tape-header" aria-hidden="true"></span>
+  <div class="header-top">
+    <a class="logo" href="index.html" aria-label="Inicio del portafolio">
+      <span class="logo-mark">csnv</span><span class="logo-dim">— Portafolio</span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Abrir menú de navegación">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="parcial1.html" class="active">Parcial 1</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Parcial 2</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Parcial 3</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!--  PARCIAL 1  -->
+  <section class="section">
+    <p class="section-eyebrow">Parcial 1</p>
+    <h2>Tareas entregadas</h2>
+
+    <!-- Actividad 2 -->
+    <article class="agent-card is-online reveal">
+      <header><h3>Actividad 2: Aquí empieza mi portafolio</h3></header>
+      <p>Portada técnica, presentación, perfil del estudiante e información técnica del portafolio.</p>
+      <p><a href="index.html" class="btn btn-ghost" style="margin-top: 12px;">Ver Inicio</a></p>
+    </article>
+
+    <div class="torn-divider" aria-hidden="true"></div>
+
+    <!-- Actividad 3 -->
+    <article class="agent-card is-online reveal">
+      <header><h3>Actividad 3: No presiones Esc… todavía</h3><span class="agent-status">COMPLETADO</span></header>
+      <p>Keylogger con event hooks y callbacks: persistencia de registro, asociación temporal y envío de telemetría a máquina Kali Linux.</p>
+      <p><a href="actividad3.html" class="btn btn-ghost" style="margin-top: 12px;">Ver documentación</a></p>
+    </article>
+
+  </section>
+
+</main>
+
+<!--  FOOTER  -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">csnv <span class="logo-dim">— expediente</span></div>
+    <div class="footer-links">
+      <a href="mailto:175329@upslp.edu.mx">Correo</a>
+      <a href="https://github.com/175329" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> Juan Pablo Casanova De La Madrid — csnv. CNO IV, UPSLP.</span>
+    <span class="ssl-badge" title="Sitio servido bajo HTTPS mediante GitHub Pages">sello ssl · https</span>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
