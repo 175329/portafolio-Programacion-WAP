@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actividad 5 — csnv :: Portafolio</title>
+<meta name="description" content="Actividad 5: Ingeniería Social (el arte del engaño). Portafolio de Seguridad Informática, UPSLP.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2310161e%22/><text x=%2250%22 y=%2266%22 font-size=%2255%22 fill=%22%23e8a33d%22 font-family=%22monospace%22 text-anchor=%22middle%22>&gt;_</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .qa-list { display: flex; flex-direction: column; gap: 24px; }
+  .qa-item {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    padding: 28px clamp(20px, 4vw, 32px);
+    transition: border-color 0.3s;
+  }
+
+  .qa-num {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .qa-q {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--text-bright);
+    margin: 0 0 16px 0;
+    line-height: 1.4;
+  }
+  .qa-a {
+    color: var(--text-main);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin: 0;
+    padding-left: 20px;
+    border-left: 2px solid var(--border-line);
+  }
+  .qa-a strong { color: var(--cyan); }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--cyan);
+  }
+  .back-link:hover { text-decoration: underline; }
+  .download-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    padding: 32px;
+    text-align: center;
+    margin-top: 20px;
+  }
+  .download-card h4 {
+    font-family: var(--font-display);
+    color: var(--text-bright);
+    margin: 0 0 12px 0;
+  }
+  .download-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-top">
+    <a class="logo" href="index.html" aria-label="Inicio del portafolio">
+      <span class="logo-mark">csnv</span><span class="logo-dim">— Portafolio</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Abrir menú de navegación">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="parcial1.html">Parcial 1</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Parcial 2</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Parcial 3</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="section">
+    <a href="parcial1.html" class="back-link">← Volver a Parcial 1</a>
+
+    <p class="section-eyebrow">Parcial 1 · Actividad 5</p>
+    <h2>Ingeniería Social<br><span style="color: var(--cyan)">El arte del engaño</span></h2>
+
+    <div class="panel reveal">
+      <p>
+        Análisis de un caso real de ingeniería social: el fraude millonario perpetrado por 
+        <strong>Lam Malone</strong>, <strong>Chetal Veer</strong> y <strong>Serrano Jeandiel</strong>, 
+        quienes utilizaron técnicas de <strong>vishing</strong>, suplantación de identidad y acceso remoto 
+        para robar más de <strong>4,100 bitcoins</strong> (aproximadamente 230 millones de dólares). 
+        El caso fue expuesto por el investigador <strong>ZachXBT</strong>.
+      </p>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Preguntas y Respuestas -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">Cuestionario</p>
+    <h2>Preguntas y respuestas</h2>
+
+    <div class="qa-list">
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 01</span>
+        <h3 class="qa-q">¿Cuál fue el principal vector de ataque utilizado por Lam Malone?</h3>
+        <p class="qa-a">
+          Lam envió primero una <strong>alerta falsa de "acceso no autorizado"</strong> a la cuenta de Google de la víctima y después se hizo pasar por un <strong>representante de soporte de Google</strong> para ganarse su confianza.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 02</span>
+        <h3 class="qa-q">¿Qué principio psicológico explotó para lograr transferencias millonarias?</h3>
+        <p class="qa-a">
+          Exploró el <strong>miedo y la urgencia</strong>: hizo creer a la víctima que su cuenta había sido comprometida, generando pánico y la necesidad de actuar rápido, así como la <strong>autoridad percibida</strong> de un "empleado" de una empresa confiable (Google/Gemini) para que bajara la guardia y siguiera instrucciones sin cuestionarlas.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 03</span>
+        <h3 class="qa-q">¿Qué tipo de ataque de ingeniería social se identifica en este caso?</h3>
+        <p class="qa-a">
+          <strong>Vishing</strong> (voice phishing): engaño realizado mediante llamadas telefónicas donde el atacante se suplanta de una entidad legítima para extraer información sensible.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 04</span>
+        <h3 class="qa-q">¿Qué debilidad de seguridad informática facilitó el fraude?</h3>
+        <p class="qa-a">
+          La víctima <strong>confió su autenticación de dos factores</strong> a personas que no había verificado y compartió el control de su equipo mediante un programa de <strong>acceso remoto (AnyDesk)</strong>, dejando expuesta la llave privada de su billetera de Bitcoin.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 05</span>
+        <h3 class="qa-q">¿Cómo complementaban Chetal Veer y Serrano Jeandiel el ataque iniciado por Lam?</h3>
+        <p class="qa-a">
+          <strong>Chetal</strong> se encargaba de acceder al Gmail para buscar información personal y financiera, mientras que <strong>Serrano</strong> se hacía pasar por representante de soporte del exchange <strong>Gemini</strong> para convencer a la víctima de restablecer su 2FA y transferir sus fondos "por seguridad".
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 06</span>
+        <h3 class="qa-q">¿Cuál fue el resultado económico total del esquema fraudulento?</h3>
+        <p class="qa-a">
+          Robaron alrededor de <strong>4,100 bitcoins</strong>, que equivalían aproximadamente a <strong>230 millones de dólares</strong> al momento del fraude.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 07</span>
+        <h3 class="qa-q">¿Qué evento marcó el punto de quiebre del caso?</h3>
+        <p class="qa-a">
+          Cuando el investigador <strong>ZachXBT</strong> detectó la cantidad de movimientos sospechosos que se estaban realizando, junto con la <strong>filtración de una grabación en video de 90 minutos</strong> que documentaba parte del engaño.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 08</span>
+        <h3 class="qa-q">¿Qué evidencia física encontraron las autoridades al detener a Chetal Veer?</h3>
+        <p class="qa-a">
+          <strong>30 relojes de diseñador</strong>, ropa y artículos de lujo, efectivo, joyas y más de <strong>36 millones de dólares en criptomonedas (ETH)</strong>, además de otros bienes adquiridos con el dinero robado.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 09</span>
+        <h3 class="qa-q">¿Qué decisión tomó Chetal Veer frente al proceso judicial?</h3>
+        <p class="qa-a">
+          Se <strong>declaró culpable</strong> de los cargos de conspiración para cometer fraude electrónico y lavado de dinero, y aceptó <strong>cooperar con las autoridades</strong>, comprometiéndose a testificar en contra de Lam y Serrano a cambio de una posible reducción de condena.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 10</span>
+        <h3 class="qa-q">¿Qué consecuencias legales enfrenta el grupo por estos hechos?</h3>
+        <p class="qa-a">
+          Enfrentan <strong>cargos federales</strong> por conspiración para cometer fraude electrónico y para lavar dinero, con penas que van de <strong>19 a 24 años de prisión</strong>.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 11</span>
+        <h3 class="qa-q">¿Qué empresas fueron suplantadas durante el ataque?</h3>
+        <p class="qa-a">
+          Principalmente <strong>Google</strong> (soporte técnico) y <strong>Gemini</strong>, el exchange de criptomonedas donde la víctima tenía parte de sus fondos.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 12</span>
+        <h3 class="qa-q">¿Qué herramienta de acceso remoto fue utilizada para comprometer a la víctima?</h3>
+        <p class="qa-a">
+          <strong>AnyDesk</strong>: software de escritorio remoto que permitió a los atacantes tomar control total del equipo de la víctima sin su conocimiento pleno del riesgo.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 13</span>
+        <h3 class="qa-q">¿Qué acción realizaron inmediatamente después del robo para ocultar los fondos?</h3>
+        <p class="qa-a">
+          Dividieron rápidamente los fondos entre los tres implicados y los enviaron a través de <strong>más de 15 exchanges distintos</strong>, intercambiándolos varias veces entre Bitcoin, Litecoin, Ethereum y Monero para dificultar su rastreo.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 14</span>
+        <h3 class="qa-q">¿Quién contribuyó al rastreo de las transacciones y exposición del caso?</h3>
+        <p class="qa-a">
+          <strong>ZachXBT</strong>, investigador especializado en criptomonedas y forense blockchain, quien rastreó los movimientos de fondos y documentó públicamente el esquema fraudulento.
+        </p>
+      </article>
+
+      <article class="qa-item reveal">
+        <span class="qa-num">Pregunta 15</span>
+        <h3 class="qa-q">¿Cuál fue el detallito que tuvo con Skylar Harrison?</h3>
+        <p class="qa-a">
+          Le regaló un <strong>bolso de lujo Hermès</strong> como parte de los gastos ostentosos realizados con el dinero robado.
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Descarga -->
+  <section class="section">
+    <p class="section-eyebrow">Documento completo</p>
+    <h2>Informe de la actividad</h2>
+
+    <div class="download-card reveal">
+      <h4>📄 Actividad 5 — Ingeniería Social (el arte del engaño)</h4>
+      <p>Descarga el informe completo en formato PDF con todas las respuestas detalladas.</p>
+      <a href="pdf/Parcial%201/Act05-175329.pdf" class="btn btn-primary" target="_blank" rel="noopener">Abrir PDF</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">csnv <span class="logo-dim">— Portafolio</span></div>
+    <div class="footer-links">
+      <a href="mailto:175329@upslp.edu.mx">Correo</a>
+      <a href="https://github.com/175329" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> Juan Pablo Casanova De La Madrid — csnv. CNO IV, UPSLP.</span>
+    <span class="ssl-badge" title="Sitio servido bajo HTTPS mediante GitHub Pages">sello ssl · https</span>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
