@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Road to Hall of Fame — csnv :: Portafolio</title>
+<meta name="description" content="Road to Hall of Fame — Progreso en laboratorios de Burp Suite Academy. Portafolio de Seguridad Informática, UPSLP.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2310161e%22/><text x=%2250%22 y=%2266%22 font-size=%2255%22 fill=%22%23e8a33d%22 font-family=%22monospace%22 text-anchor=%22middle%22>&gt;_</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== HALL OF FAME — ESTILOS ESPECÍFICOS ===== */
+  .hof-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (max-width: 960px) {
+    .hof-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Sidebar — Tu Nivel */
+  .hof-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: sticky;
+    top: 24px;
+  }
+  .level-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    padding: 28px;
+    text-align: center;
+  }
+  .level-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 4px;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    margin-bottom: 16px;
+  }
+  .level-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 16px;
+    border: 2px solid var(--border-line);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--text-bright);
+    background: var(--bg-panel-alt);
+  }
+  .level-icon span {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 2px;
+  }
+  .level-desc {
+    font-size: 0.95rem;
+    color: var(--text-main);
+    line-height: 1.6;
+  }
+  .level-desc strong { color: var(--cyan); }
+
+  /* Links sidebar */
+  .hof-links {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .hof-links h4 {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: var(--text-bright);
+    margin: 0 0 16px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .hof-links ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .hof-links a {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--cyan);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+  }
+  .hof-links a:hover { color: var(--text-bright); }
+
+  /* Cert card sidebar */
+  .cert-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+  }
+  .cert-card .not-ready {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--red-alert);
+    margin-bottom: 12px;
+  }
+  .cert-icon {
+    width: 60px;
+    height: 75px;
+    margin: 0 auto 12px;
+    border: 2px solid var(--border-line);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-panel-alt);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    gap: 4px;
+  }
+  .cert-icon .cert-emoji { font-size: 1.4rem; }
+  .cert-card p {
+    font-size: 0.9rem;
+    color: var(--text-main);
+    margin: 0;
+  }
+
+  /* Main content */
+  .hof-main {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* Progress panel */
+  .progress-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    padding: 32px;
+  }
+  .progress-panel h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--text-bright);
+    margin: 0 0 28px 0;
+  }
+  .progress-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 640px) {
+    .progress-grid { grid-template-columns: 1fr; }
+  }
+  .progress-item {
+    text-align: center;
+    position: relative;
+  }
+  .progress-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: -12px;
+    top: 30px;
+    width: 1px;
+    height: 40px;
+    background: var(--border-line);
+  }
+  @media (max-width: 640px) {
+    .progress-item:not(:last-child)::after { display: none; }
+  }
+  .progress-ring {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    border: 3px solid var(--border-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: relative;
+  }
+  .progress-ring .ring-val {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--green);
+    line-height: 1;
+  }
+  .progress-ring .ring-total {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .progress-label {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-bright);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Vuln labs bar */
+  .vuln-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .vuln-panel h3 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--text-bright);
+    margin: 0;
+  }
+  .vuln-bar-wrap {
+    flex: 1;
+    min-width: 200px;
+    height: 6px;
+    background: var(--bg-panel-alt);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .vuln-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--cyan), var(--green));
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+  .vuln-pct {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    color: var(--cyan);
+    min-width: 48px;
+    text-align: right;
+  }
+
+  /* Exam prep */
+  .exam-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    padding: 32px;
+  }
+  .exam-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .exam-header h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--text-bright);
+    margin: 0;
+  }
+  .exam-header .not-ready {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--red-alert);
+  }
+  .exam-sub {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: -16px 0 24px 0;
+  }
+  .exam-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 860px) {
+    .exam-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .exam-grid { grid-template-columns: 1fr; }
+  }
+  .exam-item {
+    text-align: center;
+    padding: 20px;
+    border-radius: 6px;
+    background: var(--bg-panel-alt);
+    border: 1px solid var(--border-line);
+  }
+  .exam-item .ring-val {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--cyan);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .exam-item .ring-total {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 12px;
+  }
+  .exam-item .exam-label {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-bright);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .exam-item .exam-read {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--cyan);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  /* Roadmap / Labs */
+  .roadmap-section {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    padding: 32px;
+  }
+  .roadmap-section h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--text-bright);
+    margin: 0 0 8px 0;
+  }
+  .roadmap-section > p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 28px 0;
+  }
+
+  /* Lab category */
+  .lab-category {
+    margin-bottom: 40px;
+  }
+  .lab-category:last-child { margin-bottom: 0; }
+  .lab-cat-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-line);
+  }
+  .lab-cat-header h4 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--cyan);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .lab-cat-count {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg-panel-alt);
+    padding: 2px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-line);
+  }
+  .lab-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .lab-card {
+    background: var(--bg-panel-alt);
+    border: 1px solid var(--border-line);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+  }
+  .lab-card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 240, 255, 0.08);
+  }
+  .lab-thumb {
+    width: 100%;
+    height: 160px;
+    background: #0a0a0a;
+    border-bottom: 1px solid var(--border-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .lab-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .lab-thumb .lab-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: var(--green);
+  }
+  .lab-thumb .lab-status.pending {
+    background: rgba(107, 114, 128, 0.15);
+    border-color: rgba(107, 114, 128, 0.4);
+    color: var(--text-muted);
+  }
+  .lab-info {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .lab-info h5 {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--text-bright);
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+  }
+  .lab-info p {
+    font-size: 0.85rem;
+    color: var(--text-main);
+    line-height: 1.6;
+    margin: 0 0 16px 0;
+    flex: 1;
+  }
+  .lab-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .lab-difficulty {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-line);
+    color: var(--text-muted);
+  }
+  .lab-difficulty.apprentice { color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
+  .lab-difficulty.practitioner { color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); }
+  .lab-difficulty.expert { color: #f87171; border-color: rgba(248, 113, 113, 0.3); }
+
+  /* Download section */
+  .download-panel {
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.05), transparent);
+    border: 1px solid var(--cyan);
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+  }
+  .download-panel h3 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--text-bright);
+    margin: 0 0 12px 0;
+  }
+  .download-panel p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    max-width: 60ch;
+    margin: 0 auto 24px auto;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--cyan);
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  .scroll-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--cyan);
+    color: var(--bg-main);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background 0.2s;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+  }
+  .scroll-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .scroll-top:hover {
+    background: #00c4d1;
+    box-shadow: 0 6px 16px rgba(0, 240, 255, 0.4);
+  }
+  .scroll-top svg {
+    width: 20px;
+    height: 20px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-top">
+    <a class="logo" href="index.html" aria-label="Inicio del portafolio">
+      <span class="logo-mark">csnv</span><span class="logo-dim">— Portafolio</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Abrir menú de navegación">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="parcial1.html">Parcial 1</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Parcial 2</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Parcial 3</a></li>
+        <li><a href="halloffame.html" class="active">Hall of Fame</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="section">
+    <a href="index.html" class="back-link">← Volver al Inicio</a>
+
+    <p class="section-eyebrow">Burp Suite Academy</p>
+    <h2>Road to <span style="color: var(--cyan)">Hall of Fame</span></h2>
+
+    <div class="hof-layout">
+
+      <!-- SIDEBAR -->
+      <aside class="hof-sidebar">
+
+        <!-- Tu Nivel -->
+        <div class="level-card reveal">
+          <span class="level-badge">Newbie</span>
+          <div class="level-icon">
+            <div>
+              <div style="font-size: 1.8rem; line-height: 1;">Ne</div>
+              <span>10 — 20.18</span>
+            </div>
+          </div>
+          <p class="level-desc">
+            Resuelve <strong>61 laboratorios</strong> más para ascender al nivel <strong>Apprentice</strong>.
+          </p>
+        </div>
+
+        <!-- Certificación -->
+        <div class="cert-card reveal">
+          <span class="not-ready">Not Ready</span>
+          <div class="cert-icon">
+            <span class="cert-emoji">📜</span>
+            <span>BSCP</span>
+          </div>
+          <p>
+            Aún no estás listo para presentar el examen de certificación <strong>Burp Suite Certified Practitioner</strong>.
+          </p>
+        </div>
+
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <div class="hof-main">
+
+        <!-- Level Progress -->
+        <div class="progress-panel reveal">
+          <h3>Level progress</h3>
+          <div class="progress-grid">
+            <div class="progress-item">
+              <div class="progress-ring">
+                <span class="ring-val">0</span>
+                <span class="ring-total">of 61</span>
+              </div>
+              <span class="progress-label">Apprentice</span>
+            </div>
+            <div class="progress-item">
+              <div class="progress-ring">
+                <span class="ring-val">0</span>
+                <span class="ring-total">of 173</span>
+              </div>
+              <span class="progress-label">Practitioner</span>
+            </div>
+            <div class="progress-item">
+              <div class="progress-ring">
+                <span class="ring-val">0</span>
+                <span class="ring-total">of 39</span>
+              </div>
+              <span class="progress-label">Expert</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vulnerability Labs -->
+        <div class="vuln-panel reveal">
+          <h3>Vulnerability labs</h3>
+          <div class="vuln-bar-wrap">
+            <div class="vuln-bar-fill" id="vulnBar"></div>
+          </div>
+          <span class="vuln-pct">0%</span>
+        </div>
+
+        <!-- Exam Preparation -->
+        <div class="exam-panel reveal">
+          <div class="exam-header">
+            <h3>Exam preparation steps</h3>
+            <span class="not-ready">Not Ready</span>
+          </div>
+          <p class="exam-sub">Los laboratorios que elijas completar deben ser de nivel "Practitioner" o superior.</p>
+          <div class="exam-grid">
+            <div class="exam-item">
+              <span class="ring-val">0</span>
+              <span class="ring-total">of 23</span>
+              <span class="exam-label">Lab from all topics</span>
+              <span class="exam-read">Read more</span>
+            </div>
+            <div class="exam-item">
+              <span class="ring-val">0</span>
+              <span class="ring-total">of 8</span>
+              <span class="exam-label">Specific labs</span>
+              <span class="exam-read">Read more</span>
+            </div>
+            <div class="exam-item">
+              <span class="ring-val">0</span>
+              <span class="ring-total">of 5</span>
+              <span class="exam-label">Mystery labs</span>
+              <span class="exam-read">Read more</span>
+            </div>
+            <div class="exam-item">
+              <span class="ring-val">0</span>
+              <span class="ring-total">of 1</span>
+              <span class="exam-label">Practice exam</span>
+              <span class="exam-read">Read more</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Roadmap / Labs Grid -->
+        <div class="roadmap-section reveal">
+          <h3>Laboratorios completados</h3>
+          <p>Registro de laboratorios resueltos en Burp Suite Academy con evidencia técnica.</p>
+
+          <!-- Apprentice -->
+          <div class="lab-category">
+            <div class="lab-cat-header">
+              <h4>🟢 Apprentice</h4>
+              <span class="lab-cat-count">0 / 61 completados</span>
+            </div>
+            <div class="lab-grid">
+              <!-- Plantilla de lab — duplicar y modificar según avance -->
+              <div class="lab-card">
+                <div class="lab-thumb">
+                  <span>[Evidencia Apprentice 01]</span>
+                  <span class="lab-status pending">Pendiente</span>
+                </div>
+                <div class="lab-info">
+                  <h5>Lab: SQL injection vulnerability in WHERE clause</h5>
+                  <p>Reto introductorio para identificar y explotar inyección SQL en cláusulas WHERE mediante manipulación de parámetros GET.</p>
+                  <div class="lab-meta">
+                    <span class="lab-difficulty apprentice">Apprentice</span>
+                    <a href="#" class="btn btn-ghost" style="padding: 6px 14px; font-size: 0.75rem;">Ver evidencia</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-thumb">
+                  <span>[Evidencia Apprentice 02]</span>
+                  <span class="lab-status pending">Pendiente</span>
+                </div>
+                <div class="lab-info">
+                  <h5>Lab: DOM XSS using web messages</h5>
+                  <p>Explotación de vulnerabilidad XSS basada en DOM mediante el uso de web messages sin validación de origen.</p>
+                  <div class="lab-meta">
+                    <span class="lab-difficulty apprentice">Apprentice</span>
+                    <a href="#" class="btn btn-ghost" style="padding: 6px 14px; font-size: 0.75rem;">Ver evidencia</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Practitioner -->
+          <div class="lab-category">
+            <div class="lab-cat-header">
+              <h4>🔵 Practitioner</h4>
+              <span class="lab-cat-count">0 / 173 completados</span>
+            </div>
+            <div class="lab-grid">
+              <div class="lab-card">
+                <div class="lab-thumb">
+                  <span>[Evidencia Practitioner 01]</span>
+                  <span class="lab-status pending">Pendiente</span>
+                </div>
+                <div class="lab-info">
+                  <h5>Lab: Blind SQL injection with time delays</h5>
+                  <p>Uso de time delays para confirmar vulnerabilidades de inyección SQL en condiciones donde no hay output visible.</p>
+                  <div class="lab-meta">
+                    <span class="lab-difficulty practitioner">Practitioner</span>
+                    <a href="#" class="btn btn-ghost" style="padding: 6px 14px; font-size: 0.75rem;">Ver evidencia</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lab-card">
+                <div class="lab-thumb">
+                  <span>[Evidencia Practitioner 02]</span>
+                  <span class="lab-status pending">Pendiente</span>
+                </div>
+                <div class="lab-info">
+                  <h5>Lab: CSRF where token validation depends on request method</h5>
+                  <p>Bypass de protección CSRF alterando el método de petición para evitar la validación del token.</p>
+                  <div class="lab-meta">
+                    <span class="lab-difficulty practitioner">Practitioner</span>
+                    <a href="#" class="btn btn-ghost" style="padding: 6px 14px; font-size: 0.75rem;">Ver evidencia</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expert -->
+          <div class="lab-category">
+            <div class="lab-cat-header">
+              <h4>🔴 Expert</h4>
+              <span class="lab-cat-count">0 / 39 completados</span>
+            </div>
+            <div class="lab-grid">
+              <div class="lab-card">
+                <div class="lab-thumb">
+                  <span>[Evidencia Expert 01]</span>
+                  <span class="lab-status pending">Pendiente</span>
+                </div>
+                <div class="lab-info">
+                  <h5>Lab: SQL injection with filter bypass via XML encoding</h5>
+                  <p>Evasión de filtros de entrada mediante codificación XML para ejecutar inyección SQL en entornos con WAF.</p>
+                  <div class="lab-meta">
+                    <span class="lab-difficulty expert">Expert</span>
+                    <a href="#" class="btn btn-ghost" style="padding: 6px 14px; font-size: 0.75rem;">Ver evidencia</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Download -->
+        <div class="download-panel reveal">
+          <h3>📄 Documento completo</h3>
+          <p>Descarga el informe técnico consolidado con el análisis de laboratorios, metodología aplicada y evidencias de Burp Suite Academy.</p>
+          <a href="pdf/Parcial%201/Act06-Road-to-Hall-of-Fame.pdf" class="btn btn-primary" target="_blank" rel="noopener">Descargar PDF</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">csnv <span class="logo-dim">— Portafolio</span></div>
+    <div class="footer-links">
+      <a href="mailto:175329@upslp.edu.mx">Correo</a>
+      <a href="https://github.com/175329" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> Juan Pablo Casanova De La Madrid — csnv. CNO IV, UPSLP.</span>
+    <span class="ssl-badge" title="Sitio servido bajo HTTPS mediante GitHub Pages">sello ssl · https</span>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+
+<button class="scroll-top" id="scrollTopBtn" aria-label="Volver arriba">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
+
+<script>
+(function() {
+  var btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  function toggle() {
+    if (window.scrollY > 300) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', toggle);
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  setTimeout(function() {
+    var bar = document.getElementById('vulnBar');
+    if (bar) bar.style.width = '0%';
+  }, 400);
+})();
+</script>
+
+</body>
+</html>
