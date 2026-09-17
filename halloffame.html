@@ -203,20 +203,31 @@
     height: 72px;
     margin: 0 auto 12px;
     border-radius: 50%;
-    border: 3px solid var(--border-line);
+    background: conic-gradient(var(--green) calc(var(--pct, 0) * 1%), var(--border-line) 0);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     position: relative;
   }
+  .progress-ring::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--bg-panel);
+  }
   .progress-ring .ring-val {
+    position: relative;
+    z-index: 1;
     font-family: var(--font-display);
     font-size: 1.1rem;
     color: var(--green);
     line-height: 1;
   }
   .progress-ring .ring-total {
+    position: relative;
+    z-index: 1;
     font-family: var(--font-mono);
     font-size: 0.65rem;
     color: var(--text-muted);
@@ -648,21 +659,21 @@
           <h3>Level progress</h3>
           <div class="progress-grid">
             <div class="progress-item">
-              <div class="progress-ring">
-                <span class="ring-val">0</span>
+              <div class="progress-ring" style="--pct: 1.64">
+                <span class="ring-val">1</span>
                 <span class="ring-total">of 61</span>
               </div>
               <span class="progress-label">Apprentice</span>
             </div>
             <div class="progress-item">
-              <div class="progress-ring">
+              <div class="progress-ring" style="--pct: 0">
                 <span class="ring-val">0</span>
                 <span class="ring-total">of 173</span>
               </div>
               <span class="progress-label">Practitioner</span>
             </div>
             <div class="progress-item">
-              <div class="progress-ring">
+              <div class="progress-ring" style="--pct: 0">
                 <span class="ring-val">0</span>
                 <span class="ring-total">of 39</span>
               </div>
