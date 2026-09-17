@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actividad 7: File Path Traversal — csnv :: Portafolio</title>
+<meta name="description" content="Actividad 7 del portafolio de Juan Pablo Casanova De La Madrid (csnv): laboratorio de File Path Traversal de PortSwigger Web Security Academy, CNO IV — Seguridad Informática, UPSLP.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2310161e%22/><text x=%2250%22 y=%2266%22 font-size=%2255%22 fill=%22%23e8a33d%22 font-family=%22monospace%22 text-anchor=%22middle%22>&gt;_</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.scroll-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cyan);
+  color: var(--bg-main);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background 0.2s;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+}
+.scroll-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.scroll-top:hover {
+  background: #00c4d1;
+  box-shadow: 0 6px 16px rgba(0, 240, 255, 0.4);
+}
+.scroll-top svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Específico de esta página de actividad */
+.meta-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 8px;
+}
+.meta-panel-item { font-family: var(--font-mono); font-size: 0.85rem; }
+.meta-panel-item .meta-label { display: block; font-size: 0.7rem; color: var(--cyan); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em; }
+.meta-panel-item .meta-value { color: var(--text-bright); }
+
+.step-list { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.step-list > li {
+  position: relative;
+  padding: 0 0 28px 44px;
+  border-left: 1px solid var(--border-line);
+  margin-left: 14px;
+}
+.step-list > li:last-child { padding-bottom: 0; }
+.step-list > li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: -15px;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-list p { margin: 0 0 12px; }
+
+figure.evidence {
+  margin: 16px 0 0;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 10px;
+}
+figure.evidence img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--border-line);
+}
+figure.evidence figcaption {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 10px 4px 2px;
+}
+
+.payload-block {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--cyan);
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 6px;
+  padding: 14px 18px;
+  overflow-x: auto;
+  margin: 0 0 1em;
+}
+
+.result-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--green);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 4px;
+  padding: 8px 14px;
+  margin-bottom: 1em;
+}
+
+.mitigation-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.mitigation-list li { padding-left: 26px; position: relative; }
+.mitigation-list li::before { content: "›"; position: absolute; left: 0; top: 0; color: var(--cyan); font-weight: bold; font-family: var(--font-mono); }
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--cyan);
+}
+.back-link:hover { text-decoration: underline; }
+.download-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+  margin-top: 20px;
+}
+.download-card h4 {
+  font-family: var(--font-display);
+  color: var(--text-bright);
+  margin: 0 0 12px 0;
+}
+.download-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+</style>
+</head>
+<body>
+
+<!--  HEADER  -->
+<header class="site-header">
+  <span class="washi-tape tape-header" aria-hidden="true"></span>
+  <div class="header-top">
+    <a class="logo" href="index.html" aria-label="Inicio del portafolio">
+      <span class="logo-mark">csnv</span><span class="logo-dim">— Portafolio</span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Abrir menú de navegación">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="parcial1.html">Parcial 1</a></li>
+        <li><a href="parcial2.html" class="active">Parcial 2</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Parcial 3</a></li>
+        <li><a href="halloffame.html">Hall of Fame</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!--  ACTIVIDAD 7  -->
+  <section class="section">
+    <a href="parcial2.html" class="back-link">← Volver a Parcial 2</a>
+
+    <p class="section-eyebrow">Parcial 2 · Actividad 7</p>
+    <h2>File Path Traversal — PortSwigger Web Security Academy</h2>
+
+    <div class="panel reveal">
+      <div class="meta-panel">
+        <div class="meta-panel-item"><span class="meta-label">Laboratorio</span><span class="meta-value">File path traversal, simple case</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Nivel</span><span class="meta-value">Apprentice</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Categoría</span><span class="meta-value">CWE-22 · Path Traversal</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Herramienta</span><span class="meta-value">Burp Suite Community Edition</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Elaborado por</span><span class="meta-value">Juan Pablo Casanova De La Madrid</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- 1-4: contexto del laboratorio -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">01 · Nivel y tipo de explotación</p>
+    <h2>Contexto del laboratorio</h2>
+    <div class="panel reveal">
+      <p>
+        Este laboratorio pertenece a la categoría <strong>File path traversal</strong> de PortSwigger Web
+        Security Academy y corresponde al nivel <strong>Apprentice</strong>: los laboratorios introductorios
+        presentan la vulnerabilidad sin mecanismos adicionales de mitigación, sin filtrado de secuencias
+        "../", sin codificación de caracteres ni validaciones del lado del servidor, por lo que la
+        explotación es directa una vez identificado el parámetro vulnerable.
+      </p>
+      <p>
+        Se trata de una vulnerabilidad de <strong>Path Traversal / Directory Traversal (CWE-22: Improper
+        Limitation of a Pathname to a Restricted Directory)</strong>, del lado del servidor, que permite a un
+        atacante manipular la ruta de un archivo solicitado a través de un parámetro de entrada para acceder
+        a archivos y directorios almacenados fuera de la carpeta raíz destinada a la aplicación web,
+        aprovechando secuencias de retroceso de directorio ("../").
+      </p>
+      <p>
+        <strong>Objetivo del laboratorio:</strong> el laboratorio contiene una vulnerabilidad de path
+        traversal en la funcionalidad que muestra las imágenes de los productos de la tienda. El objetivo es
+        explotar dicha vulnerabilidad para recuperar el contenido del archivo del sistema
+        <code>/etc/passwd</code>, lo que confirma la lectura arbitraria de archivos fuera del directorio
+        previsto por la aplicación y da por resuelto el laboratorio.
+      </p>
+      <figure class="evidence">
+        <img src="img/parcial 2/actividad7-img/fig01.png" alt="Descripción y objetivo del laboratorio en PortSwigger Web Security Academy">
+        <figcaption>Figura 1. Descripción y objetivo del laboratorio en PortSwigger Web Security Academy.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- 5: explicación técnica -->
+  <section class="section">
+    <p class="section-eyebrow">02 · Explicación técnica de la vulnerabilidad</p>
+    <h2>¿Por qué ocurre?</h2>
+    <div class="panel reveal">
+      <p>
+        La aplicación web muestra el catálogo de productos ("We Like To Shop") y cada imagen se sirve
+        dinámicamente mediante un endpoint del tipo:
+      </p>
+      <div class="payload-block">GET /image?filename=&lt;nombre_de_archivo&gt;</div>
+      <p>
+        El parámetro <code>filename</code> es utilizado por el servidor para construir, de forma interna, la
+        ruta física del archivo a devolver, concatenándolo probablemente con una ruta base similar a
+        <code>/var/www/images/</code>. El problema es que la aplicación no valida ni sanitiza el valor
+        recibido en <code>filename</code> antes de usarlo para acceder al sistema de archivos.
+      </p>
+      <p>
+        Al no existir validación, es posible sustituir el nombre de archivo esperado (por ejemplo,
+        <code>31.jpg</code>) por una secuencia de retroceso de directorios (<code>../</code>) seguida de la
+        ruta absoluta de un archivo sensible del sistema operativo. Cada <code>../</code> indica al sistema
+        operativo "sube un nivel de directorio", por lo que, al encadenar varias, es posible salir por
+        completo del directorio de imágenes y llegar a la raíz del sistema de archivos (<code>/</code>),
+        desde donde se puede referenciar cualquier archivo legible por el usuario con el que corre el
+        servidor web, como <code>/etc/passwd</code>.
+      </p>
+      <p>
+        Esta vulnerabilidad se clasifica dentro de CWE-22 y es una de las causas más comunes de exposición de
+        información sensible (código fuente, archivos de configuración, credenciales, claves privadas, etc.)
+        en aplicaciones web que sirven archivos de forma dinámica.
+      </p>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- 6: procedimiento -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">03 · Procedimiento paso a paso</p>
+    <h2>Explotación en Burp Suite</h2>
+    <div class="panel reveal">
+      <ol class="step-list">
+        <li>
+          <p>Se inicia Burp Suite Community Edition desde Kali Linux, seleccionando "Temporary project in memory" y la configuración por defecto ("Use Burp defaults").</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig02.png" alt="Búsqueda y apertura de Burp Suite en Kali Linux">
+            <figcaption>Figura 2. Búsqueda y apertura de Burp Suite en Kali Linux.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig03.png" alt="Creación de un proyecto temporal en memoria">
+            <figcaption>Figura 3. Creación de un proyecto temporal en memoria.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig04.png" alt="Selección de la configuración por defecto de Burp">
+            <figcaption>Figura 4. Selección de la configuración por defecto de Burp.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <p>Con Burp abierto en la pestaña Proxy &gt; Intercept, se abre el navegador integrado (Chromium embebido) y se accede a la URL del laboratorio proporcionada por PortSwigger.</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig05.png" alt="Pestaña Proxy con el Intercept inicialmente apagado">
+            <figcaption>Figura 5. Pestaña Proxy con el Intercept inicialmente apagado.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig06.png" alt="Acceso a la URL del laboratorio File path traversal, simple case">
+            <figcaption>Figura 6. Acceso a la URL del laboratorio "File path traversal, simple case".</figcaption>
+          </figure>
+        </li>
+        <li>
+          <p>Se activa el Intercept ("Intercept on") y se navega por la tienda; Burp captura las peticiones GET que la página realiza para cargar cada imagen de producto, del tipo <code>/image?filename=NN.jpg</code>, confirmando que el nombre de archivo se maneja mediante un parámetro controlable por el cliente.</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig07.png" alt="Primera petición GET interceptada al cargar la página principal">
+            <figcaption>Figura 7. Primera petición GET interceptada al cargar la página principal.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig08.png" alt="Historial de peticiones interceptadas mostrando el patrón /image?filename=">
+            <figcaption>Figura 8. Historial de peticiones interceptadas mostrando el patrón /image?filename=.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <p>Se identifica una petición hacia una imagen de producto (<code>filename=31.jpg</code>) y, mediante clic derecho, se envía al módulo Repeater ("Send to Repeater") para poder modificarla y reenviarla libremente.</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig09.png" alt="Vista general del entorno con Intercept activo antes de capturar la petición de imagen">
+            <figcaption>Figura 9. Vista general del entorno con Intercept activo antes de capturar la petición de imagen.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig10.png" alt="Petición interceptada GET /product?productId=1">
+            <figcaption>Figura 10. Petición interceptada GET /product?productId=1 (navegación previa dentro de la tienda).</figcaption>
+          </figure>
+        </li>
+        <li>
+          <p>En Repeater se visualiza la petición original, apuntando al parámetro <code>filename=31.jpg</code>.</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig11.png" alt="Petición GET /image?filename=31.jpg enviada al Repeater mediante el menú contextual">
+            <figcaption>Figura 11. Petición GET /image?filename=31.jpg enviada al Repeater mediante el menú contextual.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig12.png" alt="Petición original en Repeater antes de modificar el payload">
+            <figcaption>Figura 12. Petición original en Repeater antes de modificar el payload.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <p>Se reemplaza el valor <code>31.jpg</code> por la cadena de path traversal <code>../../../../etc/passwd</code>, con el fin de forzar al servidor a salir del directorio de imágenes y acceder al archivo de credenciales del sistema.</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig13.png" alt="Payload de path traversal inyectado en el parámetro filename">
+            <figcaption>Figura 13. Payload de path traversal inyectado en el parámetro filename.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <p>Se hace clic en <strong>Send</strong> y se analiza la respuesta del servidor.</p>
+        </li>
+        <li>
+          <p>El servidor responde con código <strong>HTTP 200 OK</strong> y devuelve en el cuerpo de la respuesta el contenido íntegro del archivo <code>/etc/passwd</code>, confirmando la explotación exitosa de la vulnerabilidad.</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig14.png" alt="Respuesta vulnerable del servidor mostrando el contenido de /etc/passwd">
+            <figcaption>Figura 14. Respuesta vulnerable del servidor mostrando el contenido de /etc/passwd.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <p>Finalmente, se regresa a la página del laboratorio en PortSwigger, la cual actualiza automáticamente su estado a "Solved", confirmando que el objetivo de la actividad fue completado.</p>
+          <div class="result-banner">● Lab: File path traversal, simple case — Solved</div>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad7-img/fig15.png" alt="Confirmación de laboratorio resuelto (Solved)">
+            <figcaption>Figura 15. Confirmación de laboratorio resuelto ("Solved").</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- 7: explicación del payload -->
+  <section class="section">
+    <p class="section-eyebrow">04 · Explicación del payload</p>
+    <h2>Desglose del payload utilizado</h2>
+    <div class="panel reveal">
+      <div class="payload-block">../../../../etc/passwd</div>
+      <p>El payload se construye a partir de dos componentes:</p>
+      <p>
+        <strong>../../../../</strong> — cuatro secuencias de retroceso de directorio. Cada <code>../</code>
+        instruye al sistema operativo para subir un nivel en la jerarquía de carpetas respecto al directorio
+        base donde la aplicación busca las imágenes (por ejemplo, algo similar a
+        <code>/var/www/images/</code>). Se utilizan varias secuencias encadenadas para garantizar que, sin
+        importar la profundidad real del directorio de imágenes, el recorrido llegue hasta la raíz del
+        sistema de archivos (<code>/</code>).
+      </p>
+      <p>
+        <strong>etc/passwd</strong> — ruta absoluta, ya ubicada en la raíz, hacia el archivo estándar de
+        Unix/Linux que contiene el listado de cuentas de usuario del sistema (nombre de usuario, UID, GID,
+        directorio home y shell asignada). Aunque este archivo no almacena las contraseñas en texto plano, es
+        un objetivo clásico para demostrar path traversal porque es legible por cualquier usuario del sistema
+        y su contenido es fácil de reconocer.
+      </p>
+      <p>
+        Al concatenar el payload con la ruta base que utiliza la aplicación, el resultado final resuelto por
+        el sistema operativo equivale a <code>/etc/passwd</code>, fuera del directorio que la aplicación
+        pretendía exponer.
+      </p>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- 8: mitigación -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">05 · Mitigación recomendada</p>
+    <h2>Cómo prevenir esta vulnerabilidad</h2>
+    <div class="panel reveal">
+      <p>
+        Para prevenir vulnerabilidades de path traversal como la explotada en este laboratorio, se recomienda
+        aplicar las siguientes medidas, de forma combinada:
+      </p>
+      <ul class="mitigation-list">
+        <li>Evitar recibir nombres o rutas de archivo directamente del usuario. Sustituir el parámetro <code>filename</code> por un identificador indirecto que el servidor resuelva internamente contra una lista o base de datos de archivos permitidos.</li>
+        <li>Validar y depurar (sanitizar) la entrada: rechazar cualquier valor que contenga secuencias "../", "..\", su codificación URL (<code>%2e%2e%2f</code>) o caracteres de ruta absoluta, aceptando únicamente los caracteres esperados para un nombre de archivo.</li>
+        <li>Ejecutar el servicio con el mínimo privilegio necesario y, cuando sea posible, aislar el proceso mediante chroot jail o contenedores, de forma que, aunque ocurra un escape de directorio, no existan archivos sensibles accesibles.</li>
+        <li>Utilizar las funciones o librerías seguras que ofrezca el framework o lenguaje para servir archivos estáticos, en lugar de construir rutas manualmente mediante concatenación de cadenas.</li>
+        <li>Reforzar la defensa en profundidad con un WAF (Web Application Firewall) que detecte y bloquee patrones de path traversal, y aplicar monitoreo/alertas sobre accesos a archivos fuera de lo esperado.</li>
+        <li>Restringir los permisos de lectura de archivos sensibles del sistema (como <code>/etc/shadow</code>) y mantener actualizado el sistema operativo y el software del servidor web.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!--  DESCARGA PDF  -->
+  <section class="section">
+    <p class="section-eyebrow">Documento completo</p>
+    <h2>Informe de la actividad</h2>
+
+    <div class="download-card reveal">
+      <h4>📄 Actividad 7 — File Path Traversal</h4>
+      <p>Descarga el informe completo en formato PDF con todas las capturas, la explicación técnica y la mitigación recomendada.</p>
+      <a href="pdf/Parcial%202/Actividad7-File-Path-Traversal.pdf" class="btn btn-primary" target="_blank" rel="noopener">Abrir PDF</a>
+    </div>
+  </section>
+
+</main>
+
+<!--  FOOTER  -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">csnv <span class="logo-dim">— Portafolio</span></div>
+    <div class="footer-links">
+      <a href="mailto:175329@upslp.edu.mx">Correo</a>
+      <a href="https://github.com/175329" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> Juan Pablo Casanova De La Madrid — csnv. CNO IV, UPSLP.</span>
+    <span class="ssl-badge" title="Sitio servido bajo HTTPS mediante GitHub Pages">sello ssl · https</span>
+  </div>
+</footer>
+
+<button class="scroll-top" id="scrollTopBtn" aria-label="Volver arriba">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
+
+<script src="script.js"></script>
+<script>
+(function() {
+  var btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  function toggle() {
+    if (window.scrollY > 300) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', toggle);
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+</body>
+</html>
