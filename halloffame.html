@@ -584,6 +584,79 @@
     width: 20px;
     height: 20px;
   }
+
+  /* ===== MODALES DE ACTIVIDAD ===== */
+  .lab-modal {
+    border: 1px solid var(--border-line);
+    border-radius: 10px;
+    background: var(--bg-panel);
+    color: var(--text-main);
+    padding: 0;
+    width: min(640px, 92vw);
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,240,255,0.08);
+  }
+  .lab-modal::backdrop {
+    background: rgba(3, 3, 3, 0.75);
+    backdrop-filter: blur(2px);
+  }
+  .lab-modal-inner {
+    position: relative;
+    padding: 36px clamp(20px, 4vw, 40px) 32px;
+  }
+  .lab-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border-line);
+    background: var(--bg-panel-alt);
+    color: var(--text-main);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+  }
+  .lab-modal-close:hover { border-color: var(--cyan); color: var(--cyan); }
+  .lab-modal h3 {
+    font-family: var(--font-display);
+    color: var(--text-bright);
+    margin: 12px 0 12px;
+    font-size: 1.2rem;
+    padding-right: 30px;
+  }
+  .lab-modal-desc { font-size: 0.92rem; line-height: 1.6; margin: 0 0 16px; }
+  .lab-modal-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid var(--border-line);
+    margin-bottom: 16px;
+  }
+  .lab-modal-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+    margin: 0 0 8px;
+  }
+  .lab-modal-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  @media (max-width: 480px) {
+    .lab-modal-actions { flex-direction: column; }
+    .lab-modal-actions .btn { width: 100%; justify-content: center; }
+  }
 </style>
 </head>
 <body>
@@ -666,8 +739,8 @@
               <span class="progress-label">Apprentice</span>
             </div>
             <div class="progress-item">
-              <div class="progress-ring" style="--pct: 0">
-                <span class="ring-val">0</span>
+              <div class="progress-ring" style="--pct: 1.73">
+                <span class="ring-val">3</span>
                 <span class="ring-total">of 173</span>
               </div>
               <span class="progress-label">Practitioner</span>
@@ -691,37 +764,83 @@
           <span class="vuln-pct">0%</span>
         </div>
 
-        <!-- Exam Preparation -->
-        <div class="exam-panel reveal">
-          <div class="exam-header">
-            <h3>Exam preparation steps</h3>
-            <span class="not-ready">Not Ready</span>
-          </div>
-          <p class="exam-sub">Los laboratorios que elijas completar deben ser de nivel "Practitioner" o superior.</p>
-          <div class="exam-grid">
-            <div class="exam-item">
-              <span class="ring-val">0</span>
-              <span class="ring-total">of 23</span>
-              <span class="exam-label">Lab from all topics</span>
-              <span class="exam-read">Read more</span>
+        <!-- Laboratorios resueltos -->
+        <div class="roadmap-section reveal">
+          <h3>Laboratorios resueltos</h3>
+          <p>Progreso real en la categoría <strong style="color:var(--cyan)">File Path Traversal (CWE-22)</strong> de PortSwigger Web Security Academy. Haz clic en "Ver actividad" para revisar el resumen sin salir de esta página.</p>
+
+          <div class="lab-category">
+            <div class="lab-cat-header">
+              <h4>Path Traversal — CWE-22</h4>
+              <span class="lab-cat-count">4 de 4 resueltos</span>
             </div>
-            <div class="exam-item">
-              <span class="ring-val">0</span>
-              <span class="ring-total">of 8</span>
-              <span class="exam-label">Specific labs</span>
-              <span class="exam-read">Read more</span>
-            </div>
-            <div class="exam-item">
-              <span class="ring-val">0</span>
-              <span class="ring-total">of 5</span>
-              <span class="exam-label">Mystery labs</span>
-              <span class="exam-read">Read more</span>
-            </div>
-            <div class="exam-item">
-              <span class="ring-val">0</span>
-              <span class="ring-total">of 1</span>
-              <span class="exam-label">Practice exam</span>
-              <span class="exam-read">Read more</span>
+
+            <div class="lab-grid">
+
+              <!-- Actividad 7 -->
+              <article class="lab-card">
+                <div class="lab-thumb">
+                  <img src="img/parcial 2/actividad7-img/fig01.png" alt="Lab: File path traversal, simple case">
+                  <span class="lab-status">Solved</span>
+                </div>
+                <div class="lab-info">
+                  <h5>Actividad 7 — Simple case</h5>
+                  <p>Explotación directa de path traversal en el visor de imágenes de una tienda, sin ningún filtro anti-traversal, para leer /etc/passwd.</p>
+                  <div class="lab-meta">
+                    <span class="lab-difficulty apprentice">Apprentice</span>
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal-act7').showModal()">Ver actividad</button>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Actividad 8 -->
+              <article class="lab-card">
+                <div class="lab-thumb">
+                  <img src="img/parcial 2/actividad8-img/fig01.png" alt="Lab: File path traversal, absolute path bypass">
+                  <span class="lab-status">Solved</span>
+                </div>
+                <div class="lab-info">
+                  <h5>Actividad 8 — Absolute path bypass</h5>
+                  <p>El filtro sólo bloquea secuencias "../" relativas; se evade enviando directamente una ruta absoluta del sistema de archivos.</p>
+                  <div class="lab-meta">
+                    <span class="lab-difficulty practitioner">Practitioner</span>
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal-act8').showModal()">Ver actividad</button>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Actividad 9 -->
+              <article class="lab-card">
+                <div class="lab-thumb">
+                  <img src="img/parcial 2/actividad9-img/fig01.png" alt="Lab: File path traversal, stripped non-recursively">
+                  <span class="lab-status">Solved</span>
+                </div>
+                <div class="lab-info">
+                  <h5>Actividad 9 — Stripped non-recursively</h5>
+                  <p>El filtro elimina "../" una sola vez; un payload anidado ("....//") se reconstruye a sí mismo tras el filtrado.</p>
+                  <div class="lab-meta">
+                    <span class="lab-difficulty practitioner">Practitioner</span>
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal-act9').showModal()">Ver actividad</button>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Actividad 10 -->
+              <article class="lab-card">
+                <div class="lab-thumb">
+                  <img src="img/parcial 2/actividad10-img/fig01.png" alt="Lab: File path traversal, superfluous URL-decode">
+                  <span class="lab-status">Solved</span>
+                </div>
+                <div class="lab-info">
+                  <h5>Actividad 10 — Superfluous URL-decode</h5>
+                  <p>Doble codificación URL ("..%252f") que evade el filtro inicial y se revela tras una decodificación superflua de la aplicación.</p>
+                  <div class="lab-meta">
+                    <span class="lab-difficulty practitioner">Practitioner</span>
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal-act10').showModal()">Ver actividad</button>
+                  </div>
+                </div>
+              </article>
+
             </div>
           </div>
         </div>
@@ -731,6 +850,76 @@
   </section>
 
 </main>
+
+<!-- ===== MODALES DE ACTIVIDADES ===== -->
+
+<dialog class="lab-modal" id="modal-act7">
+  <div class="lab-modal-inner">
+    <button type="button" class="lab-modal-close" onclick="this.closest('dialog').close()" aria-label="Cerrar">✕</button>
+    <span class="lab-difficulty apprentice">Apprentice</span>
+    <h3>Actividad 7 — File path traversal, simple case</h3>
+    <p class="lab-modal-desc">Laboratorio sin ninguna mitigación: el parámetro <code>filename</code> del endpoint de imágenes se concatena directamente a la ruta base, sin validar ni filtrar secuencias de retroceso de directorio.</p>
+    <img class="lab-modal-img" src="img/parcial 2/actividad7-img/fig14.png" alt="Respuesta vulnerable mostrando el contenido de /etc/passwd">
+    <p class="lab-modal-label">Payload utilizado</p>
+    <div class="payload-block">GET /image?filename=../../../../etc/passwd HTTP/2</div>
+    <p class="lab-modal-desc">Cuatro secuencias "../" bastan para retroceder desde el directorio de imágenes hasta la raíz del sistema de archivos y leer <code>/etc/passwd</code> directamente.</p>
+    <div class="lab-modal-actions">
+      <a href="actividad7.html" class="btn btn-primary">Ver documentación completa</a>
+      <a href="pdf/Parcial%202/Actividad7-File-Path-Traversal.pdf" class="btn btn-ghost" target="_blank" rel="noopener">Descargar PDF</a>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="lab-modal" id="modal-act8">
+  <div class="lab-modal-inner">
+    <button type="button" class="lab-modal-close" onclick="this.closest('dialog').close()" aria-label="Cerrar">✕</button>
+    <span class="lab-difficulty practitioner">Practitioner</span>
+    <h3>Actividad 8 — Absolute path bypass</h3>
+    <p class="lab-modal-desc">La aplicación filtra y elimina las secuencias "../" del valor recibido, pero ese control sólo contempla rutas relativas: no valida el caso en que se envía directamente una ruta absoluta del sistema de archivos.</p>
+    <img class="lab-modal-img" src="img/parcial 2/actividad8-img/fig12.png" alt="Respuesta vulnerable mostrando el contenido de /etc/passwd">
+    <p class="lab-modal-label">Payload utilizado</p>
+    <div class="payload-block">GET /image?filename=/etc/passwd HTTP/2</div>
+    <p class="lab-modal-desc">Al recibir una ruta que comienza con "/", el sistema operativo la interpreta desde la raíz, ignorando el directorio base de imágenes al que la aplicación pretendía restringirla.</p>
+    <div class="lab-modal-actions">
+      <a href="actividad8.html" class="btn btn-primary">Ver documentación completa</a>
+      <a href="pdf/Parcial%202/Actividad8-File-Path-Traversal.pdf" class="btn btn-ghost" target="_blank" rel="noopener">Descargar PDF</a>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="lab-modal" id="modal-act9">
+  <div class="lab-modal-inner">
+    <button type="button" class="lab-modal-close" onclick="this.closest('dialog').close()" aria-label="Cerrar">✕</button>
+    <span class="lab-difficulty practitioner">Practitioner</span>
+    <h3>Actividad 9 — Stripped non-recursively</h3>
+    <p class="lab-modal-desc">La aplicación elimina las secuencias "../" del valor recibido, pero lo hace en una sola pasada: no vuelve a examinar el resultado por si, tras esa eliminación, se ha formado una nueva secuencia de traversal.</p>
+    <img class="lab-modal-img" src="img/parcial 2/actividad9-img/fig13.png" alt="Respuesta vulnerable mostrando el contenido de /etc/passwd">
+    <p class="lab-modal-label">Payload utilizado</p>
+    <div class="payload-block">GET /image?filename=....//....//....//etc/passwd HTTP/2</div>
+    <p class="lab-modal-desc">Cada bloque "....//" contiene "../" en su interior; al eliminarlo una sola vez, los caracteres restantes se recomponen exactamente en "../", reconstruyendo el traversal.</p>
+    <div class="lab-modal-actions">
+      <a href="actividad9.html" class="btn btn-primary">Ver documentación completa</a>
+      <a href="pdf/Parcial%202/Actividad9-File-Path-Traversal-non-recursively.pdf" class="btn btn-ghost" target="_blank" rel="noopener">Descargar PDF</a>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="lab-modal" id="modal-act10">
+  <div class="lab-modal-inner">
+    <button type="button" class="lab-modal-close" onclick="this.closest('dialog').close()" aria-label="Cerrar">✕</button>
+    <span class="lab-difficulty practitioner">Practitioner</span>
+    <h3>Actividad 10 — Superfluous URL-decode</h3>
+    <p class="lab-modal-desc">La aplicación bloquea cualquier valor con la secuencia literal "../" y, después de ese filtro, realiza una decodificación URL adicional (superflua) antes de usar el valor para acceder al sistema de archivos.</p>
+    <img class="lab-modal-img" src="img/parcial 2/actividad10-img/fig12.png" alt="Respuesta vulnerable mostrando el contenido de /etc/passwd">
+    <p class="lab-modal-label">Payload utilizado</p>
+    <div class="payload-block">GET /image?filename=..%252f..%252f..%252fetc/passwd HTTP/2</div>
+    <p class="lab-modal-desc">"%252f" es "/" codificado dos veces; la capa HTTP decodifica una vez (queda "..%2f", superando el filtro) y la decodificación superflua de la aplicación revela "../" tres veces.</p>
+    <div class="lab-modal-actions">
+      <a href="actividad10.html" class="btn btn-primary">Ver documentación completa</a>
+      <a href="pdf/Parcial%202/Actividad10-File-Path-Traversal-URL-decode.pdf" class="btn btn-ghost" target="_blank" rel="noopener">Descargar PDF</a>
+    </div>
+  </div>
+</dialog>
 
 <!-- FOOTER -->
 <footer class="site-footer">
@@ -773,6 +962,12 @@
     var bar = document.getElementById('vulnBar');
     if (bar) bar.style.width = '0%';
   }, 400);
+
+  document.querySelectorAll('dialog.lab-modal').forEach(function(dialog) {
+    dialog.addEventListener('click', function(e) {
+      if (e.target === dialog) dialog.close();
+    });
+  });
 })();
 </script>
 
