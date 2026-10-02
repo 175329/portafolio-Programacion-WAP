@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actividad 13: Evaluación de Seguridad Ofensiva — My File Server 1 — csnv :: Portafolio</title>
+<meta name="description" content="Actividad 13 del portafolio de Juan Pablo Casanova De La Madrid (csnv): informe de pentesting sobre la máquina VulnHub My File Server 1, materia Programación WAP, CNO IV — Seguridad Informática, UPSLP.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2310161e%22/><text x=%2250%22 y=%2266%22 font-size=%2255%22 fill=%22%23e8a33d%22 font-family=%22monospace%22 text-anchor=%22middle%22>&gt;_</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.scroll-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cyan);
+  color: var(--bg-main);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background 0.2s;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+}
+.scroll-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.scroll-top:hover {
+  background: #00c4d1;
+  box-shadow: 0 6px 16px rgba(0, 240, 255, 0.4);
+}
+.scroll-top svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Específico de esta página de actividad */
+.meta-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 8px;
+}
+.meta-panel-item { font-family: var(--font-mono); font-size: 0.85rem; }
+.meta-panel-item .meta-label { display: block; font-size: 0.7rem; color: var(--cyan); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em; }
+.meta-panel-item .meta-value { color: var(--text-bright); }
+
+.step-list { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.step-list > li {
+  position: relative;
+  padding: 0 0 28px 44px;
+  border-left: 1px solid var(--border-line);
+  margin-left: 14px;
+}
+.step-list > li:last-child { padding-bottom: 0; }
+.step-list > li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: -15px;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-list p { margin: 0 0 12px; }
+.step-list h5 { margin: 0 0 10px; color: var(--text-bright); font-family: var(--font-display); font-size: 1.05rem; }
+
+figure.evidence {
+  margin: 16px 0 0;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 10px;
+}
+figure.evidence img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--border-line);
+}
+figure.evidence figcaption {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 10px 4px 2px;
+}
+
+.payload-block {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--cyan);
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 6px;
+  padding: 14px 18px;
+  overflow-x: auto;
+  margin: 0 0 1em;
+  white-space: pre-wrap;
+}
+
+.result-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--green);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 4px;
+  padding: 8px 14px;
+  margin-bottom: 1em;
+}
+
+.risk-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 8px;
+  padding: 18px 24px;
+  margin: 0 0 20px;
+}
+.risk-banner .risk-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 4px;
+}
+.risk-banner .risk-value {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--red-alert);
+  font-weight: 600;
+}
+.risk-banner .risk-note {
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.mitigation-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.mitigation-list li { padding-left: 26px; position: relative; }
+.mitigation-list li::before { content: "›"; position: absolute; left: 0; top: 0; color: var(--cyan); font-weight: bold; font-family: var(--font-mono); }
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--cyan);
+}
+.back-link:hover { text-decoration: underline; }
+
+.download-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+.download-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+}
+.download-card h4 {
+  font-family: var(--font-display);
+  color: var(--text-bright);
+  margin: 0 0 12px 0;
+}
+.download-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+/* Tablas de datos */
+.data-table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  min-width: 480px;
+}
+table.data-table th, table.data-table td {
+  border: 1px solid var(--border-line);
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+table.data-table th {
+  background: var(--bg-panel-alt);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+table.data-table td { color: var(--text-main); }
+table.data-table code { color: var(--cyan); }
+
+.sev-critica { color: var(--red-alert); font-weight: 600; }
+.sev-alta { color: #f59e0b; font-weight: 600; }
+.sev-media { color: #eab308; font-weight: 600; }
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin: 0 0 1em;
+}
+.impact-item {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+.impact-item .impact-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px; }
+.impact-item .impact-value { font-family: var(--font-display); font-size: 1.1rem; color: var(--text-bright); }
+.impact-item.critica .impact-value { color: var(--red-alert); }
+.impact-item.alta .impact-value { color: #f59e0b; }
+.impact-item.media .impact-value { color: #eab308; }
+</style>
+</head>
+<body>
+
+<!--  HEADER  -->
+<header class="site-header">
+  <span class="washi-tape tape-header" aria-hidden="true"></span>
+  <div class="header-top">
+    <a class="logo" href="index.html" aria-label="Inicio del portafolio">
+      <span class="logo-mark">csnv</span><span class="logo-dim">— Portafolio</span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Abrir menú de navegación">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="parcial1.html">Parcial 1</a></li>
+        <li><a href="parcial2.html" class="active">Parcial 2</a></li>
+        <li><a href="#" class="is-pending" aria-disabled="true">Parcial 3</a></li>
+        <li><a href="halloffame.html">Hall of Fame</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!--  ACTIVIDAD 13  -->
+  <section class="section">
+    <a href="parcial2.html" class="back-link">← Volver a Parcial 2</a>
+
+    <p class="section-eyebrow">Parcial 2 · Actividad 13</p>
+    <h2>Evaluación de Seguridad Ofensiva — My File Server 1</h2>
+
+    <div class="panel reveal">
+      <div class="meta-panel">
+        <div class="meta-panel-item"><span class="meta-label">Máquina objetivo</span><span class="meta-value">My File Server: 1 (VulnHub — Armour Infosec)</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Entorno</span><span class="meta-value">Laboratorio VulnHub, red aislada</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Materia</span><span class="meta-value">Programación WAP — Mtro. Servando López Contreras</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Fecha</span><span class="meta-value">30 de septiembre de 2026</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Elaborado por</span><span class="meta-value">Juan Pablo Casanova De La Madrid</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Resumen ejecutivo -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">01 · Resumen ejecutivo</p>
+    <h2>Resultado de la evaluación</h2>
+    <div class="panel reveal">
+      <div class="risk-banner">
+        <div>
+          <span class="risk-label">Riesgo global</span>
+          <span class="risk-value">CRÍTICO</span>
+        </div>
+        <span class="risk-note">Tiempo de compromiso total del sistema: menos de 1 hora.</span>
+      </div>
+      <p>
+        Se realizó una evaluación de seguridad ofensiva (pentesting de caja negra/gris) sobre el servidor de
+        archivos corporativo "My File Server 1", con el objetivo de determinar su nivel real de exposición
+        ante un atacante externo con conectividad a la red interna.
+      </p>
+      <p>
+        El resultado de la evaluación es crítico: en menos de una hora de trabajo, el equipo logró comprometer
+        completamente el servidor, obteniendo acceso con privilegios de superusuario (root). La cadena de
+        ataque no requirió el uso de exploits sofisticados ni ingeniería social; se basó en una combinación de
+        malas prácticas de configuración —credenciales expuestas en un archivo de texto plano accesible por
+        HTTP, un recurso compartido SMB con escritura anónima habilitada y un kernel Linux desactualizado y
+        vulnerable— que permitieron escalar de un acceso anónimo a control total del sistema.
+      </p>
+      <p style="margin-top: 20px;"><strong>Hallazgo principal — cadena de compromiso completa:</strong></p>
+      <div class="payload-block">(1) enumeración anónima de SMB/FTP
+→ (2) credenciales en texto plano vía HTTP (/readme.txt)
+→ (3) acceso FTP con dichas credenciales
+→ (4) inyección de clave pública SSH vía escritura FTP
+→ (5) acceso SSH interactivo sin contraseña
+→ (6) explotación de Dirty COW (CVE-2016-5195)
+→ (7) shell de root y extracción de /root/proof.txt</div>
+      <p>
+        <strong>Recomendación ejecutiva:</strong> se recomienda tratar este sistema como comprometido y
+        proceder a su reconstrucción desde una imagen limpia, rotación inmediata de credenciales,
+        actualización del kernel y aplicación de las contramedidas detalladas en la sección de recomendaciones
+        antes de reincorporarlo a producción.
+      </p>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- Alcance -->
+  <section class="section">
+    <p class="section-eyebrow">02 · Alcance (Scope)</p>
+    <h2>Condiciones de la evaluación</h2>
+    <div class="panel reveal">
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <tbody>
+            <tr><th>Objetivo</th><td>My File Server: 1 (máquina vulnerable, VulnHub — Armour Infosec / Akanksha Sachin Verma)</td></tr>
+            <tr><th>IP objetivo</th><td><code>192.168.41.128</code></td></tr>
+            <tr><th>IP del atacante</th><td><code>192.168.41.129</code> (Kali Linux)</td></tr>
+            <tr><th>Sistema operativo</th><td>CentOS Linux 7 (Core), kernel 3.10.0-229.el17.x86_64</td></tr>
+            <tr><th>Tipo de prueba</th><td>Caja gris interna (acceso de red simulando segmento corporativo)</td></tr>
+            <tr><th>Servicios en alcance</th><td>FTP (21/2121), SSH (22), HTTP (80), RPC/NFS (111/2049/20048), SMB (445)</td></tr>
+            <tr><th>Metodología</th><td>PTES / OWASP Testing Guide (adaptado)</td></tr>
+            <tr><th>Ventana de ejecución</th><td>30 de septiembre de 2026</td></tr>
+            <tr><th>Fuera de alcance</th><td>Ataques DoS, ingeniería social, y cualquier sistema fuera del rango 192.168.41.0/24</td></tr>
+            <tr><th>Autorización</th><td>Prueba realizada en entorno de laboratorio controlado y aislado, con fines exclusivamente académicos/formativos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Metodología -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">03 · Metodología aplicada</p>
+    <h2>Enfoque estructurado por fases</h2>
+    <div class="panel reveal">
+      <p>
+        La evaluación siguió un enfoque estructurado por fases, alineado con marcos de referencia estándar de
+        la industria <strong>PTES</strong> (Penetration Testing Execution Standard) y <strong>OWASP Testing
+        Guide</strong>, adaptado al alcance de una máquina de servidor de archivos:
+      </p>
+      <ul class="mitigation-list">
+        <li><strong>Reconocimiento:</strong> identificación del host activo en el segmento de red mediante técnicas de descubrimiento pasivo y activo.</li>
+        <li><strong>Enumeración:</strong> identificación de servicios, versiones, y configuración de permisos en cada puerto expuesto.</li>
+        <li><strong>Explotación:</strong> obtención de un primer punto de apoyo (foothold) aprovechando configuraciones débiles y credenciales expuestas.</li>
+        <li><strong>Escalada de privilegios:</strong> elevación de un usuario sin privilegios a root mediante explotación de vulnerabilidad de kernel.</li>
+        <li><strong>Post-explotación:</strong> confirmación del impacto mediante extracción de evidencia (flag) desde el directorio protegido del superusuario.</li>
+        <li><strong>Documentación:</strong> registro de evidencia técnica, análisis de riesgo (modelo CIA) y elaboración de recomendaciones de remediación.</li>
+      </ul>
+      <p style="margin-top: 16px;">
+        <strong>Herramientas utilizadas:</strong> arp-scan, netdiscover, nmap, smbmap, nikto, navegador web,
+        ftp (cliente), ssh-keygen/ssh, searchsploit, gcc, y el exploit público Dirty COW (exploit-db #40616).
+      </p>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Cadena de ataque / procedimiento -->
+  <section class="section">
+    <p class="section-eyebrow">04 · Cadena de ataque</p>
+    <h2>De la enumeración anónima a root</h2>
+    <div class="panel">
+      <ol class="step-list">
+        <li>
+          <h5>Reconocimiento</h5>
+          <p>Se verificó la interfaz de red del atacante (eth0), confirmando la dirección <code>192.168.41.129/24</code> como punto de partida para el barrido de descubrimiento. Con <code>arp-scan -l</code> se identificaron tres hosts activos, entre ellos un host no documentado (<code>192.168.41.128</code>) candidato a objetivo, confirmado después con <code>netdiscover</code> como una máquina virtual VMware.</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig01.png" alt="Configuración de red del equipo atacante (ip a) — eth0: 192.168.41.129/24">
+            <figcaption>Figura 1. Configuración de red del equipo atacante (ip a) — eth0: 192.168.41.129/24.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig02.png" alt="arp-scan -l — hosts detectados en el segmento 192.168.41.0/24">
+            <figcaption>Figura 2. arp-scan -l — hosts detectados en el segmento 192.168.41.0/24.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig03.png" alt="netdiscover confirma el host objetivo 192.168.41.128">
+            <figcaption>Figura 3. netdiscover confirma el host objetivo 192.168.41.128 (VMware, Inc.).</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Enumeración de puertos y servicios</h5>
+          <p>Se ejecutó un escaneo exhaustivo de todos los puertos TCP con detección de versión y scripts por defecto (<code>nmap -p- -A</code>), revelando una superficie de ataque amplia y varios servicios con configuraciones de riesgo: FTP anónimo escribible, SSH, HTTP, RPC/NFS, SMB con firma deshabilitada y un segundo servicio FTP (ProFTPD).</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig04.png" alt="Resultado de nmap -p- -A parte 1: FTP anónimo escribible, SSH, HTTP, RPC/NFS">
+            <figcaption>Figura 4. Resultado de nmap -p- -A (parte 1): FTP anónimo escribible, SSH, HTTP, RPC/NFS.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig05.png" alt="Resultado de nmap -p- -A parte 2: Samba 4.9.1, NFS, ProFTPD, firma SMB deshabilitada">
+            <figcaption>Figura 5. Resultado de nmap -p- -A (parte 2): Samba 4.9.1, NFS, ProFTPD, firma SMB deshabilitada.</figcaption>
+          </figure>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Puerto</th><th>Servicio</th><th>Versión / Detalle</th></tr></thead>
+              <tbody>
+                <tr><td>21/tcp</td><td>FTP</td><td>vsftpd 3.0.2 — login anónimo permitido, directorio "pub" escribible</td></tr>
+                <tr><td>22/tcp</td><td>SSH</td><td>OpenSSH 7.4 (protocolo 2.0)</td></tr>
+                <tr><td>80/tcp</td><td>HTTP</td><td>Apache httpd 2.4.6 (CentOS) — título "My File Server"</td></tr>
+                <tr><td>111/tcp</td><td>RPCbind</td><td>2-4 (RPC #100000)</td></tr>
+                <tr><td>445/tcp</td><td>SMB</td><td>Samba smbd 4.9.1 — firma de mensajes deshabilitada (riesgo)</td></tr>
+                <tr><td>2049/tcp</td><td>NFS</td><td>3 (RPC #100227)</td></tr>
+                <tr><td>2121/tcp</td><td>FTP</td><td>ProFTPD 1.3.5 — login anónimo permitido</td></tr>
+                <tr><td>20048/tcp</td><td>Mountd</td><td>1-3 (RPC #100005)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </li>
+        <li>
+          <h5>Enumeración de SMB y servicio web</h5>
+          <p>Con <code>smbmap</code> se enumeraron los recursos compartidos sin autenticación (sesión NULL), identificando el recurso "smbdata" con permisos de <strong>LECTURA y ESCRITURA</strong> para cualquier usuario anónimo. El escaneo con <code>nikto</code> sobre el servicio HTTP identificó indexado de directorios, cabeceras de seguridad ausentes, método TRACE activo y la existencia de un archivo <code>/readme.txt</code> potencialmente sensible, el cual expuso una credencial en texto plano ("My Password is rootroot1"), que combinada con el usuario "smbuser" visible en SMB entregó un par de credenciales completo sin necesidad de fuerza bruta.</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig06.png" alt="smbmap -H 192.168.41.128 — recurso smbdata con acceso anónimo READ/WRITE">
+            <figcaption>Figura 6. smbmap -H 192.168.41.128 — recurso smbdata con acceso anónimo READ/WRITE.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig07.png" alt="nikto -h 192.168.41.128 — hallazgo de /readme.txt y debilidades de configuración HTTP">
+            <figcaption>Figura 7. nikto -h 192.168.41.128 — hallazgo de /readme.txt y debilidades de configuración HTTP.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig08.png" alt="http://192.168.41.128/readme.txt — credencial expuesta: My Password is rootroot1">
+            <figcaption>Figura 8. http://192.168.41.128/readme.txt — credencial expuesta: "My Password is rootroot1".</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Explotación — de FTP a SSH interactivo</h5>
+          <p>Con las credenciales obtenidas (<code>smbuser:rootroot1</code>) se estableció una sesión FTP autenticada. Dado que el servicio SSH estaba expuesto y el usuario tenía acceso de escritura a su propio directorio home vía FTP, se aplicó la técnica de <strong>inyección de clave SSH</strong>: se generó un par de claves RSA en el equipo atacante y, mediante FTP, se creó el directorio <code>.ssh</code> y se subió la clave pública como <code>authorized_keys</code> dentro de <code>/home/smbuser/</code>, permitiendo una sesión SSH interactiva sin necesidad de contraseña.</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig09.png" alt="Autenticación FTP exitosa con smbuser:rootroot1">
+            <figcaption>Figura 9. Autenticación FTP exitosa con smbuser:rootroot1.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig10.png" alt="Creación de ~/.ssh y subida de authorized_keys vía FTP">
+            <figcaption>Figura 10. Creación de ~/.ssh y subida de authorized_keys vía FTP (put id_rsa.pub authorized_keys).</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig11.png" alt="Acceso SSH como smbuser mediante autenticación por clave pública">
+            <figcaption>Figura 11. Acceso SSH como smbuser mediante autenticación por clave pública (sin contraseña).</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Escalada de privilegios — Dirty COW</h5>
+          <p>La verificación de identidad confirmó un acceso de usuario estándar sin privilegios administrativos (uid=1000). El kernel del sistema (Linux 3.10.0-229.el7) resultó vulnerable a <strong>Dirty COW (CVE-2016-5195)</strong>, una condición de carrera en el subsistema de memoria que permite a un usuario sin privilegios escribir en archivos de solo lectura, incluyendo binarios con bit SUID. El exploit se transfirió sirviéndolo con un servidor HTTP temporal (<code>python3 -m http.server</code>) y se compiló localmente con <code>gcc</code>, sobrescribiendo <code>/usr/bin/passwd</code> y obteniendo una shell interactiva con privilegios de root.</p>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig12.png" alt="searchsploit -m 40616 — exploit Dirty COW (CVE-2016-5195), método SUID">
+            <figcaption>Figura 12. searchsploit -m 40616 — exploit Dirty COW (CVE-2016-5195), método SUID.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig13.png" alt="Ejecución de ./cowroot — Popping root shell, shell root@fileserver obtenida">
+            <figcaption>Figura 13. Ejecución de ./cowroot — "Popping root shell", shell root@fileserver obtenida.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig14.png" alt="Confirmación de privilegios — id devuelve uid=0(root)">
+            <figcaption>Figura 14. Confirmación de privilegios — id devuelve uid=0(root).</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Post-explotación — prueba de impacto</h5>
+          <p>Como evidencia final del compromiso total del sistema, se accedió al directorio <code>/root</code> y se extrajo el archivo de prueba, confirmando acceso irrestricto a cualquier recurso del servidor.</p>
+          <div class="result-banner">● Flag de compromiso: af52e0163b03cbf7c6dd146351594a43</div>
+          <figure class="evidence">
+            <img src="img/parcial 2/actividad13-img/fig15.png" alt="/root/proof.txt — flag de compromiso">
+            <figcaption>Figura 15. /root/proof.txt — flag de compromiso: af52e0163b03cbf7c6dd146351594a43.</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Análisis de impacto -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">05 · Análisis de impacto</p>
+    <h2>Modelo CIA y escenario de impacto empresarial</h2>
+    <div class="panel reveal">
+      <p>
+        Al alcanzarse privilegios de root, los tres pilares de la seguridad de la información se ven
+        comprometidos en su totalidad:
+      </p>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Pilar</th><th>Severidad</th><th>Detalle</th></tr></thead>
+          <tbody>
+            <tr><td>Confidencialidad</td><td class="sev-critica">CRÍTICO</td><td>Acceso total de lectura a cualquier archivo del servidor, incluyendo configuraciones, credenciales adicionales y datos almacenados en los recursos compartidos (smbdata, NFS).</td></tr>
+            <tr><td>Integridad</td><td class="sev-critica">CRÍTICO</td><td>Capacidad de modificar o eliminar cualquier archivo del sistema (demostrado al sobrescribir /usr/bin/passwd), incluyendo la posibilidad de alterar datos de negocio o instalar persistencia (backdoors).</td></tr>
+            <tr><td>Disponibilidad</td><td class="sev-alta">ALTO</td><td>Un atacante con acceso root puede detener servicios críticos (FTP, SMB, NFS, SSH, HTTP) o corromper el sistema operativo, provocando interrupción total del servicio de almacenamiento corporativo.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <strong>Impacto de negocio:</strong> tratándose de un servidor de archivos corporativo, el compromiso
+        implica una exposición directa de información potencialmente sensible de la organización (documentos,
+        credenciales, datos de clientes o empleados), además de constituir un punto de pivote para
+        comprometer otros sistemas del segmento de red interno.
+      </p>
+      <div class="impact-grid">
+        <div class="impact-item critica"><span class="impact-label">Confidencialidad</span><span class="impact-value">Crítica</span></div>
+        <div class="impact-item critica"><span class="impact-label">Integridad</span><span class="impact-value">Crítica</span></div>
+        <div class="impact-item alta"><span class="impact-label">Disponibilidad</span><span class="impact-value">Alta</span></div>
+        <div class="impact-item alta"><span class="impact-label">Continuidad del negocio</span><span class="impact-value">Alta</span></div>
+        <div class="impact-item media"><span class="impact-label">Reputación corporativa</span><span class="impact-value">Media</span></div>
+        <div class="impact-item media"><span class="impact-label">Cumplimiento normativo</span><span class="impact-value">Media</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Tabla de hallazgos -->
+  <section class="section">
+    <p class="section-eyebrow">06 · Tabla de hallazgos</p>
+    <h2>Vulnerabilidades identificadas</h2>
+    <div class="panel reveal">
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Vulnerabilidad</th><th>Severidad</th><th>Impacto</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Credenciales en texto plano expuestas vía HTTP (/readme.txt)</td><td class="sev-critica">Crítica</td><td>Compromiso directo de credenciales válidas sin necesidad de ataque activo</td></tr>
+            <tr><td>2</td><td>Recurso compartido SMB (smbdata) con escritura anónima</td><td class="sev-critica">Crítica</td><td>Permite a cualquier usuario no autenticado leer/escribir archivos</td></tr>
+            <tr><td>3</td><td>Login anónimo habilitado en FTP (vsftpd y ProFTPD)</td><td class="sev-alta">Alta</td><td>Enumeración de archivos y, combinado con H-01, acceso autenticado</td></tr>
+            <tr><td>4</td><td>Escritura en directorio home del usuario vía FTP permite inyección de clave SSH</td><td class="sev-alta">Alta</td><td>Pivote de credenciales FTP a acceso interactivo SSH persistente</td></tr>
+            <tr><td>5</td><td>Kernel vulnerable a Dirty COW (CVE-2016-5195)</td><td class="sev-critica">Crítica</td><td>Escalada de privilegios de usuario estándar a root</td></tr>
+            <tr><td>6</td><td>Firma de mensajes SMB deshabilitada (message signing)</td><td class="sev-media">Media</td><td>Expone el servicio a ataques de relay/MITM sobre SMB</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- Recomendaciones -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">07 · Recomendaciones técnicas</p>
+    <h2>Remediación correctiva y roadmap</h2>
+    <div class="panel reveal">
+      <p><strong>Correctivas inmediatas:</strong></p>
+      <ul class="mitigation-list">
+        <li>Eliminar de forma inmediata el archivo /readme.txt (o cualquier archivo que exponga credenciales) del directorio público del servidor web.</li>
+        <li>Rotar todas las credenciales del sistema, en particular la del usuario smbuser, y eliminar la clave pública inyectada (authorized_keys) del servidor comprometido.</li>
+        <li>Actualizar el kernel de CentOS a una versión parcheada contra CVE-2016-5195 (Dirty COW) y establecer un proceso periódico de gestión de parches.</li>
+        <li>Reconstruir el servidor desde una imagen limpia, dado que se confirmó acceso root; no se debe confiar en la integridad del sistema actual.</li>
+      </ul>
+      <p style="margin-top: 20px;"><strong>Correctivas estructurales:</strong></p>
+      <ul class="mitigation-list">
+        <li>Deshabilitar el acceso anónimo en los servicios FTP (vsftpd y ProFTPD) y exigir autenticación fuerte en todos los servicios expuestos.</li>
+        <li>Revisar y restringir los permisos del recurso compartido SMB "smbdata", eliminando el acceso de escritura anónimo y aplicando control de acceso basado en usuarios/grupos.</li>
+        <li>Habilitar la firma de mensajes SMB (message signing) de forma obligatoria para mitigar ataques de tipo relay.</li>
+        <li>Deshabilitar el método HTTP TRACE y aplicar cabeceras de seguridad HTTP (Content-Security-Policy, X-Content-Type-Options, Strict-Transport-Security, Referrer-Policy).</li>
+        <li>Actualizar Apache HTTP Server a una versión soportada y aplicar hardening del servidor web (ocultar banners de versión, desactivar indexado de directorios).</li>
+        <li>Implementar monitoreo de integridad de archivos (FIM) sobre binarios críticos (/usr/bin/passwd, /etc/shadow, /etc/ssh/) y alertas ante modificaciones no autorizadas.</li>
+        <li>Establecer un programa recurrente de pentesting y gestión de vulnerabilidades sobre los activos expuestos.</li>
+        <li>Aplicar el principio de mínimo privilegio y segmentar la red para limitar el movimiento lateral desde un servidor de archivos comprometido.</li>
+      </ul>
+      <p style="margin-top: 20px;"><strong>Roadmap de remediación:</strong></p>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <tbody>
+            <tr><th>Inmediato (0–7 días)</th><td>Reconstrucción del servidor, rotación de credenciales y cierre de accesos anónimos.</td></tr>
+            <tr><th>Corto plazo (2–4 semanas)</th><td>Actualización de kernel y hardening de servicios expuestos.</td></tr>
+            <tr><th>Mediano plazo (1–3 meses)</th><td>Monitoreo de integridad de archivos y segmentación de red.</td></tr>
+            <tr><th>Continuo</th><td>Programa recurrente de pentesting y gestión de vulnerabilidades.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!--  DESCARGAS  -->
+  <section class="section">
+    <p class="section-eyebrow">Documentos completos</p>
+    <h2>Informe y presentación de la actividad</h2>
+
+    <div class="download-grid">
+      <div class="download-card reveal">
+        <h4>📄 Reporte técnico completo</h4>
+        <p>Informe detallado de pruebas de penetración sobre My File Server 1, con metodología, evidencia técnica y recomendaciones.</p>
+        <a href="pdf/Parcial%202/Actividad13-Reporte-PenTest-FileServer.pdf" class="btn btn-primary" target="_blank" rel="noopener">Abrir reporte (PDF)</a>
+      </div>
+      <div class="download-card reveal">
+        <h4>📊 Presentación ejecutiva</h4>
+        <p>Resumen ejecutivo en formato de diapositivas: contexto, nivel de riesgo, hallazgos críticos y roadmap de remediación.</p>
+        <a href="pdf/Parcial%202/Actividad13-Presentacion-PenTest-FileServer.pdf" class="btn btn-primary" target="_blank" rel="noopener">Abrir presentación (PDF)</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!--  FOOTER  -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">csnv <span class="logo-dim">— Portafolio</span></div>
+    <div class="footer-links">
+      <a href="mailto:175329@upslp.edu.mx">Correo</a>
+      <a href="https://github.com/175329" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> Juan Pablo Casanova De La Madrid — csnv. CNO IV, UPSLP.</span>
+    <span class="ssl-badge" title="Sitio servido bajo HTTPS mediante GitHub Pages">sello ssl · https</span>
+  </div>
+</footer>
+
+<button class="scroll-top" id="scrollTopBtn" aria-label="Volver arriba">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
+
+<script src="script.js"></script>
+<script>
+(function() {
+  var btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  function toggle() {
+    if (window.scrollY > 300) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', toggle);
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+</body>
+</html>
