@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actividad 17: La memoria del crimen — csnv :: Portafolio</title>
+<meta name="description" content="Actividad 17 del portafolio de Juan Pablo Casanova De La Madrid (csnv): análisis forense de un volcado de memoria RAM con Volatility 2 y 3 (OtterCTF), CNO IV — Seguridad Informática, UPSLP.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2310161e%22/><text x=%2250%22 y=%2266%22 font-size=%2255%22 fill=%22%23e8a33d%22 font-family=%22monospace%22 text-anchor=%22middle%22>&gt;_</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.scroll-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cyan);
+  color: var(--bg-main);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background 0.2s;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+}
+.scroll-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.scroll-top:hover {
+  background: #00c4d1;
+  box-shadow: 0 6px 16px rgba(0, 240, 255, 0.4);
+}
+.scroll-top svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Específico de esta página de actividad */
+.meta-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 8px;
+}
+.meta-panel-item { font-family: var(--font-mono); font-size: 0.85rem; }
+.meta-panel-item .meta-label { display: block; font-size: 0.7rem; color: var(--cyan); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em; }
+.meta-panel-item .meta-value { color: var(--text-bright); }
+
+.step-list { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.step-list > li {
+  position: relative;
+  padding: 0 0 28px 44px;
+  border-left: 1px solid var(--border-line);
+  margin-left: 14px;
+}
+.step-list > li:last-child { padding-bottom: 0; }
+.step-list > li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: -15px;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-list p { margin: 0 0 4px; }
+.step-list h5 { margin: 0 0 6px; color: var(--text-bright); font-family: var(--font-display); font-size: 1rem; }
+
+.mitigation-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.mitigation-list li { padding-left: 26px; position: relative; }
+.mitigation-list li::before { content: "›"; position: absolute; left: 0; top: 0; color: var(--cyan); font-weight: bold; font-family: var(--font-mono); }
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--cyan);
+}
+.back-link:hover { text-decoration: underline; }
+
+.download-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+  margin-top: 20px;
+}
+.download-card h4 {
+  font-family: var(--font-display);
+  color: var(--text-bright);
+  margin: 0 0 12px 0;
+}
+.download-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+/* Visor de la infografía en PDF */
+.pdf-viewer-wrap {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 10px;
+  padding: 14px;
+  margin: 0 0 20px;
+}
+.pdf-viewer-wrap object,
+.pdf-viewer-wrap embed {
+  display: block;
+  width: 100%;
+  height: 1400px;
+  max-height: 85vh;
+  border: 0;
+  border-radius: 6px;
+  background: #fff;
+}
+.pdf-fallback {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.pdf-fallback a { color: var(--cyan); }
+
+@media (max-width: 720px) {
+  .pdf-viewer-wrap object,
+  .pdf-viewer-wrap embed {
+    height: 90vh;
+  }
+}
+
+/* Evidencias (capturas) */
+figure.evidence {
+  margin: 16px 0 0;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 10px;
+}
+figure.evidence img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--border-line);
+}
+figure.evidence figcaption {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 10px 4px 2px;
+}
+
+/* Tabla de preguntas y respuestas */
+.qa-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.qa-table th,
+.qa-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-line);
+}
+.qa-table th {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.qa-table td:first-child {
+  font-family: var(--font-mono);
+  color: var(--cyan);
+  width: 36px;
+}
+.qa-table td.qa-answer {
+  font-family: var(--font-mono);
+  color: var(--text-bright);
+  white-space: nowrap;
+}
+.qa-table tr:last-child td { border-bottom: 0; }
+.table-scroll { overflow-x: auto; }
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+@media (max-width: 720px) {
+  .qa-table td.qa-answer { white-space: normal; }
+  .compare-grid { grid-template-columns: 1fr; }
+}
+/* Figuras, tablas y bloques de comandos */
+figure.evidence.evidence-sm { width: fit-content; max-width: 100%; }
+figure.evidence.evidence-sm img { width: auto; max-width: 100%; }
+.fig-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.fig-grid figure.evidence { margin-top: 16px; }
+.step-list code, .qa-table code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--cyan);
+  word-break: break-all;
+}
+.results-table td:first-child {
+  width: 180px;
+  color: var(--cyan);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+.results-table td.hash {
+  font-family: var(--font-mono);
+  color: var(--text-bright);
+  word-break: break-all;
+}
+.match {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border: 1px solid var(--cyan);
+  border-radius: 4px;
+  color: var(--cyan);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.code-block {
+  background: #0a0a0a;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 14px 18px;
+  overflow-x: auto;
+  margin: 10px 0 0;
+}
+.code-block pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--cyan);
+  white-space: pre;
+}
+.qa-table td.qa-answer { white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!--  HEADER  -->
+<header class="site-header">
+  <span class="washi-tape tape-header" aria-hidden="true"></span>
+  <div class="header-top">
+    <a class="logo" href="index.html" aria-label="Inicio del portafolio">
+      <span class="logo-mark">csnv</span><span class="logo-dim">— Portafolio</span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Abrir menú de navegación">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="parcial1.html">Parcial 1</a></li>
+        <li><a href="parcial2.html">Parcial 2</a></li>
+        <li><a href="parcial3.html" class="active">Parcial 3</a></li>
+        <li><a href="halloffame.html">Hall of Fame</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!--  ACTIVIDAD 17  -->
+  <section class="section">
+    <a href="parcial3.html" class="back-link">← Volver a Parcial 3</a>
+
+    <p class="section-eyebrow">Parcial 3 · Actividad 17</p>
+    <h2>La memoria del crimen — extracción de evidencia de un volcado RAM</h2>
+
+    <div class="panel reveal">
+      <div class="meta-panel">
+        <div class="meta-panel-item"><span class="meta-label">Herramientas</span><span class="meta-value">Volatility 3 (2.28.3) · Volatility 2.6.1 · Kali Linux</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Evidencia</span><span class="meta-value">OtterCTF.raw (2 GB) · perfil Win7SP1x64</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Tipo de entrega</span><span class="meta-value">Cuestionario resuelto con comandos y capturas (PDF)</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Elaborado por</span><span class="meta-value">Juan Pablo Casanova De La Madrid</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Resumen -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">01 · Resumen</p>
+    <h2>¿Qué se hizo?</h2>
+    <div class="panel reveal">
+      <p>
+        En esta práctica de <strong>análisis forense de memoria volátil</strong> se examinó el volcado de RAM del equipo de un
+        presunto cibercriminal, autodenominado <strong>"Morty"</strong>, vinculado con un grupo de Telegram, con los servidores
+        <strong>Lunar</strong> y con el uso de servicios Torrent para extorsionar a sus víctimas. Con
+        <strong>Volatility</strong> se respondieron diez puntos del caso, documentando cada comando ejecutado y su captura.
+      </p>
+      <ul class="mitigation-list" style="margin-top: 20px;">
+        <li><strong>Sistema:</strong> marca de tiempo del volcado, sistema operativo y arquitectura, nombre del equipo y llaves del Registro.</li>
+        <li><strong>Credenciales:</strong> hash NTLM del usuario Rick y su contraseña en texto plano, recuperada de la memoria de LSASS.</li>
+        <li><strong>Red y procesos:</strong> IP local del equipo, procesos sospechosos y la conexión al servidor malicioso, con su geolocalización.</li>
+        <li><strong>Indicios del delito:</strong> correos usados para ingeniería social y la cartera Bitcoin del ransomware, verificada en listas negras.</li>
+      </ul>
+      <p style="margin-top: 20px;">
+        Se usaron <strong>los dos frameworks de Volatility</strong>: Volatility 3 funcionó con los plugins de escaneo
+        (<code>psscan</code>, <code>netscan</code>), pero los que recorren listas y los del Registro fallaron por un descuadre de
+        la tabla de símbolos para este kernel. Para el Registro, la contraseña y la hora local se usó Volatility 2.6.1 con el
+        perfil <code>Win7SP1x64</code>.
+      </p>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- Preparación -->
+  <section class="section">
+    <p class="section-eyebrow">02 · Preparación</p>
+    <h2>Preparación del entorno</h2>
+    <div class="panel reveal">
+      <ol class="step-list">
+        <li>
+          <h5>Instalación de Volatility 3</h5>
+          <p>Se clonó Volatility 3 desde el repositorio oficial de Volatility Foundation en Kali Linux.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig01.png" alt="Terminal de Kali clonando el repositorio de Volatility 3 desde GitHub">
+            <figcaption>Figura 1. Instalación de Volatility 3.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Descarga y descompresión de la evidencia</h5>
+          <p>La imagen se descargó en 7 volúmenes. Al descomprimirla, 7-Zip reportó <em>"Everything is Ok"</em> y un archivo final de <strong>2,147,483,648 bytes (2 GB)</strong>, lo que confirma que la evidencia se reconstruyó completa.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig02.png" alt="Listado de los 7 volúmenes OtterCTF.zip descargados en Kali">
+            <figcaption>Figura 2. Los 7 volúmenes descargados en Kali.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig03.png" alt="Salida de 7-Zip con Everything is Ok y tamaño 2147483648 bytes">
+            <figcaption>Figura 3. Descompresión verificada: 2,147,483,648 bytes.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Volatility 3 vs. Volatility 2</h5>
+          <p>En Volatility 3, <code>pslist</code> quedó vacío mientras <code>hivescan</code> sí encontró los hives, señal del descuadre de símbolos. Por eso se combinaron ambos frameworks.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig04.png" alt="Volatility 3: windows.pslist sin resultados y windows.registry.hivescan con offsets de hives">
+            <figcaption>Figura 4. En Volatility 3, pslist queda vacío mientras hivescan sí encuentra los hives.</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Sistema -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">03 · Sistema</p>
+    <h2>Marca de tiempo, sistema operativo y credenciales</h2>
+    <div class="panel reveal">
+      <ol class="step-list">
+        <li>
+          <h5>Marca de tiempo local del volcado</h5>
+          <div class="code-block"><pre>python2 vol.py -f OtterCTF.raw imageinfo</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig05.png" alt="Salida de imageinfo con el perfil sugerido Win7SP1x64 y las fechas del volcado">
+            <figcaption>Figura 5. imageinfo: perfil Win7SP1x64 y la marca de tiempo local.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>UTC:</strong> 2018-08-04 19:34:22 · <strong>Local:</strong> 2018-08-04 22:34:22 +0300.</p>
+          <p><strong>Análisis:</strong> la marca local fija el instante en que se "congeló" la memoria; procesos, conexiones y sesiones reflejan el estado del sistema a esa hora. La zona horaria UTC+3 ayuda a ubicar al sujeto y a correlacionar la evidencia con otros registros de la cadena de custodia.</p>
+        </li>
+        <li>
+          <h5>Sistema operativo y arquitectura</h5>
+          <div class="code-block"><pre>python3 vol.py -f OtterCTF.raw windows.info</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig06.png" alt="Salida de windows.info con NtMajorVersion 6, NtMinorVersion 1 e Is64Bit True">
+            <figcaption>Figura 6. windows.info: NtMajorVersion 6, NtMinorVersion 1, Is64Bit True.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Respuesta:</strong> Windows 7 Service Pack 1 de 64 bits (x64). Windows 6.1 corresponde a Windows 7, <code>NtProductWinNt</code> indica edición de escritorio e <code>Is64Bit True</code> la arquitectura.</p>
+        </li>
+        <li>
+          <h5>Contraseña del perfil del cibercriminal</h5>
+          <p>Primero se extrajeron los hashes de las cuentas locales:</p>
+          <div class="code-block"><pre>python2 vol.py -f OtterCTF.raw --profile=Win7SP1x64 hashdump</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig07.png" alt="Salida de hashdump con las cuentas Administrator, Guest y Rick">
+            <figcaption>Figura 7. hashdump: el usuario Rick y su hash NTLM.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;">El hash NTLM de <strong>Rick</strong> es <code>518172d012f97d3a8fcc089615283940</code> (Administrator y Guest tienen contraseña vacía). Como no estaba en CrackStation, la contraseña se recuperó en texto plano con el plugin <strong>mimikatz</strong>, que descifra las credenciales que WDigest mantiene en la memoria de LSASS; por eso importaba que la sesión estuviera iniciada con el sistema en vivo.</p>
+          <div class="code-block"><pre>python2 vol.py --plugins=plugins -f OtterCTF.raw --profile=Win7SP1x64 mimikatz</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig08.png" alt="Salida del plugin mimikatz con la contraseña en texto plano del usuario Rick">
+            <figcaption>Figura 8. mimikatz: contraseña en texto plano del usuario Rick (campo wdigest).</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Contraseña (usuario Rick):</strong> <code>MortyIsReallyAnOtter</code></p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- Red y Registro -->
+  <section class="section">
+    <p class="section-eyebrow">04 · Red y Registro</p>
+    <h2>Dirección IP, Registro y nombre del equipo</h2>
+    <div class="panel reveal">
+      <ol class="step-list">
+        <li>
+          <h5>Direccionamiento IP del equipo</h5>
+          <div class="code-block"><pre>python3 vol.py -f OtterCTF.raw windows.netscan</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig09.png" alt="Salida de windows.netscan con la dirección local 192.168.202.131 repetida en las conexiones">
+            <figcaption>Figura 9. netscan: la dirección local del equipo se repite como 192.168.202.131.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Respuesta:</strong> la IP local del equipo comprometido, origen de las conexiones, es <code>192.168.202.131</code> (columna Local Address).</p>
+        </li>
+        <li>
+          <h5>Llaves del Registro del Sistema</h5>
+          <p>El Registro guarda la configuración del sistema y de cada usuario: programas de arranque, dispositivos USB, redes, zona horaria, cuentas y archivos recientes. Analizarlo permite reconstruir qué hacía el usuario y extraer credenciales.</p>
+          <div class="code-block"><pre>python2 vol.py -f OtterCTF.raw --profile=Win7SP1x64 hivelist</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig10.png" alt="Salida de hivelist con los hives SYSTEM, SAM, SECURITY, SOFTWARE, DEFAULT y ntuser.dat de Rick">
+            <figcaption>Figura 10. hivelist: hives del Registro cargados en memoria.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;">Aparecen SYSTEM, SAM, SECURITY, SOFTWARE, DEFAULT y los hives de usuario, entre ellos <code>\??\C:\Users\Rick\ntuser.dat</code>, que confirma que el usuario del equipo es Rick.</p>
+        </li>
+        <li>
+          <h5>Nombre del ordenador</h5>
+          <div class="code-block"><pre>python2 vol.py -f OtterCTF.raw --profile=Win7SP1x64 printkey -K "ControlSet001\Control\ComputerName\ComputerName"</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig11.png" alt="Salida de printkey con el valor ComputerName WIN-LO6FAF3DTFE">
+            <figcaption>Figura 11. printkey: valor ComputerName del Registro.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Respuesta:</strong> <code>WIN-LO6FAF3DTFE</code>. Contiene <strong>FAF3</strong> (objetivo potencial, SEDENE) y <strong>TFE</strong> (posible autor de los servidores Lunar, CNDI).</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Procesos -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">05 · Procesos</p>
+    <h2>Procesos sospechosos y servidor malicioso</h2>
+    <div class="panel reveal">
+      <ol class="step-list">
+        <li>
+          <h5>Tres procesos importantes</h5>
+          <div class="code-block"><pre>python3 vol.py -f OtterCTF.raw windows.psscan</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig12.png" alt="Salida de windows.psscan con procesos como LunarMS.exe, Rick And Morty y vmware-tray.ex">
+            <figcaption>Figura 12. psscan: procesos del sistema (LunarMS, Rick And Morty, vmware-tray, etc.).</figcaption>
+          </figure>
+          <div class="table-scroll" style="margin-top: 16px;">
+            <table class="qa-table">
+              <thead><tr><th>Proceso</th><th>PID</th><th>¿Por qué es importante?</th></tr></thead>
+              <tbody>
+                <tr><td class="qa-answer">LunarMS.exe</td><td>708</td><td>Juego (servidor privado de MapleStory) con una conexión activa a 77.102.199.102:7575. Es el canal de comunicación con el atacante y está ligado a "Lunar".</td></tr>
+                <tr><td class="qa-answer">Rick And Morty</td><td>3820</td><td>Descarga falsa de la serie obtenida vía torrent que sirvió de señuelo para ejecutar el malware. Es el proceso padre del 3720.</td></tr>
+                <tr><td class="qa-answer">vmware-tray.ex</td><td>3720</td><td>Creado por "Rick And Morty", se disfraza del proceso legítimo de VMware. En realidad es el ransomware que oculta el mensaje de rescate y la cartera.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </li>
+        <li>
+          <h5>Conexión al servidor malicioso</h5>
+          <p>En la misma salida de <code>windows.netscan</code> (Figura 9), el proceso <code>LunarMS.exe</code> (PID 708) mantiene la conexión <code>192.168.202.131:49530 → 77.102.199.102:7575</code>.</p>
+          <p><strong>IP del servidor:</strong> <code>77.102.199.102</code> · <strong>Puerto:</strong> <code>7575</code></p>
+          <p><strong>Ubicación posible del atacante:</strong> Londres, Inglaterra, Reino Unido (zona de Charing Cross / Trafalgar Square, CP WC2N, 51.50853, -0.12574). ISP: Virgin Media Limited (AS5089).</p>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad17-img/fig13.png" alt="Geolocalización de la IP 77.102.199.102 en geolocation.com: Londres, Reino Unido, Virgin Media Limited">
+            <figcaption>Figura 13. Geolocalización de la IP 77.102.199.102 según geolocation.com.</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- Indicios -->
+  <section class="section">
+    <p class="section-eyebrow">06 · Indicios</p>
+    <h2>Correos de ingeniería social y cartera del ransomware</h2>
+    <div class="panel reveal">
+      <ol class="step-list">
+        <li>
+          <h5>Correos electrónicos</h5>
+          <p>Se volcó la memoria del proceso <code>chrome.exe</code> (PID 4076) y se filtraron las direcciones de correo con una expresión regular:</p>
+          <div class="code-block"><pre>python2 vol.py -f OtterCTF.raw --profile=Win7SP1x64 memdump -p 4076 -D dump/
+strings dump/4076.dmp | grep -Eo "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" | sort -u</pre></div>
+            <figure class="evidence">
+              <img src="img/parcial 3/actividad17-img/fig14.png" alt="memdump del proceso chrome.exe PID 4076">
+              <figcaption>Figura 14. Volcado de la memoria del proceso chrome.exe (PID 4076).</figcaption>
+            </figure>
+            <figure class="evidence evidence-sm">
+              <img src="img/parcial 3/actividad17-img/fig15.png" alt="Lista de correos extraídos de la memoria de Chrome, incluyendo rickopicko@mail.com y rickypinky@mail.com">
+              <figcaption>Figura 15. Correos extraídos de la memoria de Chrome.</figcaption>
+            </figure>
+          <p style="margin-top: 14px;"><strong>Correos:</strong> <code>rickopicko@mail.com</code> y <code>rickypinky@mail.com</code>. Aparecen con el prefijo "username" porque quedó pegado el nombre del campo del formulario.</p>
+          <p><strong>Plataforma y navegador:</strong> webmail <strong>mail.com</strong>, abierto en <strong>Google Chrome</strong>.</p>
+        </li>
+        <li>
+          <h5>Cartera del monedero cripto (proceso 3720)</h5>
+          <div class="code-block"><pre>python2 vol.py -f OtterCTF.raw --profile=Win7SP1x64 memdump -p 3720 -D dump/
+strings dump/3720.dmp | grep -i -A2 "This is Ransomware"
+strings -e l dump/3720.dmp | grep -oE "\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\b" | grep -vE "^[0-9A-Fa-f]+$" | sort -u</pre></div>
+            <figure class="evidence">
+              <img src="img/parcial 3/actividad17-img/fig16.png" alt="memdump del proceso 3720">
+              <figcaption>Figura 16. Volcado de la memoria del proceso 3720 (el ransomware).</figcaption>
+            </figure>
+            <figure class="evidence">
+              <img src="img/parcial 3/actividad17-img/fig17.png" alt="Mensaje This is Ransomware encontrado en la memoria del proceso 3720">
+              <figcaption>Figura 17. Mensaje oculto del ransomware en la memoria del proceso 3720.</figcaption>
+            </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad17-img/fig18.png" alt="Dirección Bitcoin extraída con strings en UTF-16">
+            <figcaption>Figura 18. Dirección de la cartera Bitcoin extraída (strings UTF-16).</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Cartera:</strong> <code>1MmpEmebJkqXG8nQv4cjJSmxZQFVmFo63M</code></p>
+          <p><strong>¿Reportada en BTC Black?</strong> No: la verificación en btcblack.it indica que no está en listas negras.</p>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad17-img/fig19.png" alt="btcblack.it indicando que la dirección no está en la lista negra">
+            <figcaption>Figura 19. Verificación en BTC Black: la dirección no está reportada.</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Resultados -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">07 · Resultados</p>
+    <h2>Resumen de hallazgos</h2>
+    <div class="panel reveal table-scroll">
+      <table class="qa-table results-table">
+        <thead><tr><th>Punto</th><th>Hallazgo</th></tr></thead>
+        <tbody>
+          <tr><td>Hora local del volcado</td><td>2018-08-04 22:34:22 (UTC+3)</td></tr>
+          <tr><td>Sistema operativo</td><td>Windows 7 SP1 x64 (Win7SP1x64)</td></tr>
+          <tr><td>Usuario / contraseña</td><td class="hash">Rick / MortyIsReallyAnOtter</td></tr>
+          <tr><td>IP local</td><td class="hash">192.168.202.131</td></tr>
+          <tr><td>Nombre del equipo</td><td class="hash">WIN-LO6FAF3DTFE</td></tr>
+          <tr><td>Procesos clave</td><td>LunarMS.exe (708) · Rick And Morty (3820) · vmware-tray.ex (3720)</td></tr>
+          <tr><td>Servidor malicioso</td><td class="hash">77.102.199.102:7575 — Londres, Reino Unido</td></tr>
+          <tr><td>Correos</td><td class="hash">rickopicko@mail.com · rickypinky@mail.com</td></tr>
+          <tr><td>Cartera Bitcoin</td><td class="hash">1MmpEmebJkqXG8nQv4cjJSmxZQFVmFo63M</td></tr>
+          <tr><td>BTC Black</td><td>No reportada</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!--  DOCUMENTO EN PDF  -->
+  <section class="section">
+    <p class="section-eyebrow">Producto final</p>
+    <h2>Documento completo</h2>
+
+    <div class="pdf-viewer-wrap reveal">
+      <object data="pdf/Parcial%203/Actividad17.pdf" type="application/pdf">
+        <div class="pdf-fallback">
+          <p>Tu navegador no puede mostrar el PDF embebido.</p>
+          <p><a href="pdf/Parcial%203/Actividad17.pdf" target="_blank" rel="noopener">Abrir el documento en una pestaña nueva</a></p>
+        </div>
+      </object>
+    </div>
+
+    <div class="download-card reveal">
+      <h4>📄 Actividad 17 — La memoria del crimen</h4>
+      <p>Análisis forense del volcado de RAM OtterCTF.raw con Volatility 2 y 3: sistema, credenciales, red, procesos, correos y cartera del ransomware.</p>
+      <a href="pdf/Parcial%203/Actividad17.pdf" class="btn btn-primary" target="_blank" rel="noopener">Abrir PDF</a>
+      <a href="pdf/Parcial%203/Actividad17.pdf" class="btn btn-ghost" download="CasanovaDeLaMadridJuanPablo_Act17.pdf" style="margin-left: 8px;">Descargar PDF</a>
+    </div>
+  </section>
+
+</main>
+
+<!--  FOOTER  -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">csnv <span class="logo-dim">— Portafolio</span></div>
+    <div class="footer-links">
+      <a href="mailto:175329@upslp.edu.mx">Correo</a>
+      <a href="https://github.com/175329" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> Juan Pablo Casanova De La Madrid — csnv. CNO IV, UPSLP.</span>
+    <span class="ssl-badge" title="Sitio servido bajo HTTPS mediante GitHub Pages">sello ssl · https</span>
+  </div>
+</footer>
+
+<button class="scroll-top" id="scrollTopBtn" aria-label="Volver arriba">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
+
+<script src="script.js"></script>
+<script>
+(function() {
+  var btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  function toggle() {
+    if (window.scrollY > 300) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', toggle);
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+</body>
+</html>
