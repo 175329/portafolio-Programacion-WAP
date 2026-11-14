@@ -70,7 +70,10 @@ if ("IntersectionObserver" in window) {
         }
       });
     },
-    { threshold: 0.15 }
+    // threshold 0 + rootMargin: se activa en cuanto el panel entra a la
+    // pantalla, aunque sea más alto que el 15 % visible que pedía antes
+    // (los paneles muy largos nunca llegaban a mostrarse).
+    { threshold: 0, rootMargin: "0px 0px -10% 0px" }
   );
   revealEls.forEach((el) => observer.observe(el));
 } else {
