@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actividad 19: Los primeros minutos cuentan — csnv :: Portafolio</title>
+<meta name="description" content="Actividad 19 del portafolio de Juan Pablo Casanova De La Madrid (csnv): adquisición forense en caliente de un sistema Windows como primer respondiente, CNO IV — Seguridad Informática, UPSLP.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2310161e%22/><text x=%2250%22 y=%2266%22 font-size=%2255%22 fill=%22%23e8a33d%22 font-family=%22monospace%22 text-anchor=%22middle%22>&gt;_</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.scroll-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cyan);
+  color: var(--bg-main);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background 0.2s;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+}
+.scroll-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.scroll-top:hover {
+  background: #00c4d1;
+  box-shadow: 0 6px 16px rgba(0, 240, 255, 0.4);
+}
+.scroll-top svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Específico de esta página de actividad */
+.meta-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 8px;
+}
+.meta-panel-item { font-family: var(--font-mono); font-size: 0.85rem; }
+.meta-panel-item .meta-label { display: block; font-size: 0.7rem; color: var(--cyan); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em; }
+.meta-panel-item .meta-value { color: var(--text-bright); }
+
+.step-list { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.step-list > li {
+  position: relative;
+  padding: 0 0 28px 44px;
+  border-left: 1px solid var(--border-line);
+  margin-left: 14px;
+}
+.step-list > li:last-child { padding-bottom: 0; }
+.step-list > li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: -15px;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-list p { margin: 0 0 4px; }
+.step-list h5 { margin: 0 0 6px; color: var(--text-bright); font-family: var(--font-display); font-size: 1rem; }
+
+.mitigation-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.mitigation-list li { padding-left: 26px; position: relative; }
+.mitigation-list li::before { content: "›"; position: absolute; left: 0; top: 0; color: var(--cyan); font-weight: bold; font-family: var(--font-mono); }
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--cyan);
+}
+.back-link:hover { text-decoration: underline; }
+
+.download-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+  margin-top: 20px;
+}
+.download-card h4 {
+  font-family: var(--font-display);
+  color: var(--text-bright);
+  margin: 0 0 12px 0;
+}
+.download-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+/* Visor de la infografía en PDF */
+.pdf-viewer-wrap {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 10px;
+  padding: 14px;
+  margin: 0 0 20px;
+}
+.pdf-viewer-wrap object,
+.pdf-viewer-wrap embed {
+  display: block;
+  width: 100%;
+  height: 1400px;
+  max-height: 85vh;
+  border: 0;
+  border-radius: 6px;
+  background: #fff;
+}
+.pdf-fallback {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.pdf-fallback a { color: var(--cyan); }
+
+@media (max-width: 720px) {
+  .pdf-viewer-wrap object,
+  .pdf-viewer-wrap embed {
+    height: 90vh;
+  }
+}
+
+/* Evidencias (capturas) */
+figure.evidence {
+  margin: 16px 0 0;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 10px;
+}
+figure.evidence img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--border-line);
+}
+figure.evidence figcaption {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 10px 4px 2px;
+}
+
+/* Tabla de preguntas y respuestas */
+.qa-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.qa-table th,
+.qa-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-line);
+}
+.qa-table th {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.qa-table td:first-child {
+  font-family: var(--font-mono);
+  color: var(--cyan);
+  width: 36px;
+}
+.qa-table td.qa-answer {
+  font-family: var(--font-mono);
+  color: var(--text-bright);
+  white-space: nowrap;
+}
+.qa-table tr:last-child td { border-bottom: 0; }
+.table-scroll { overflow-x: auto; }
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+@media (max-width: 720px) {
+  .qa-table td.qa-answer { white-space: normal; }
+  .compare-grid { grid-template-columns: 1fr; }
+}
+/* Figuras, tablas y bloques de comandos */
+figure.evidence.evidence-sm { width: fit-content; max-width: 100%; }
+figure.evidence.evidence-sm img { width: auto; max-width: 100%; }
+.fig-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.fig-grid figure.evidence { margin-top: 16px; }
+.step-list code, .qa-table code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--cyan);
+  word-break: break-all;
+}
+.results-table td:first-child {
+  width: 180px;
+  color: var(--cyan);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+.results-table td.hash {
+  font-family: var(--font-mono);
+  color: var(--text-bright);
+  word-break: break-all;
+}
+.match {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border: 1px solid var(--cyan);
+  border-radius: 4px;
+  color: var(--cyan);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.code-block {
+  background: #0a0a0a;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 14px 18px;
+  overflow-x: auto;
+  margin: 10px 0 0;
+}
+.code-block pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--cyan);
+  white-space: pre;
+}
+.qa-table td.qa-answer { white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!--  HEADER  -->
+<header class="site-header">
+  <span class="washi-tape tape-header" aria-hidden="true"></span>
+  <div class="header-top">
+    <a class="logo" href="index.html" aria-label="Inicio del portafolio">
+      <span class="logo-mark">csnv</span><span class="logo-dim">— Portafolio</span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Abrir menú de navegación">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="parcial1.html">Parcial 1</a></li>
+        <li><a href="parcial2.html">Parcial 2</a></li>
+        <li><a href="parcial3.html" class="active">Parcial 3</a></li>
+        <li><a href="halloffame.html">Hall of Fame</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!--  ACTIVIDAD 19  -->
+  <section class="section">
+    <a href="parcial3.html" class="back-link">← Volver a Parcial 3</a>
+
+    <p class="section-eyebrow">Parcial 3 · Actividad 19</p>
+    <h2>Los primeros minutos cuentan — adquisición forense en escenas del crimen digital</h2>
+
+    <div class="panel reveal">
+      <div class="meta-panel">
+        <div class="meta-panel-item"><span class="meta-label">Herramientas</span><span class="meta-value">Comandos nativos de CMD y PowerShell · NetUsers.exe</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Equipo analizado</span><span class="meta-value">Windows 11 Pro (sistema en caliente)</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Rol</span><span class="meta-value">Investigador forense · primer respondiente</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Tipo de entrega</span><span class="meta-value">Informe ejecutivo con comandos, resultados y capturas (PDF)</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Elaborado por</span><span class="meta-value">Juan Pablo Casanova De La Madrid</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- Resumen -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">01 · Resumen</p>
+    <h2>¿Qué se hizo?</h2>
+    <div class="panel reveal">
+      <p>
+        Como <strong>primer respondiente</strong> designado por las fuerzas del orden, se adquirió la evidencia de un sistema Windows
+        "comprometido" mientras seguía <strong>encendido</strong> (adquisición en caliente). La información volátil, como procesos,
+        conexiones, sesiones y caché DNS, se pierde al apagar el equipo, por eso se recaba primero y con comandos nativos del sistema.
+        En el informe ejecutivo se explica cada uno de los 20 comandos y su resultado.
+      </p>
+      <ul class="mitigation-list" style="margin-top: 20px;">
+        <li><strong>Sistema y procesos:</strong> marca temporal, procesos en ejecución y servicios (CMD vs. PowerShell).</li>
+        <li><strong>Usuarios:</strong> sesiones activas, historial de inicios de sesión y cuentas locales.</li>
+        <li><strong>Red:</strong> configuración IP, nombres NetBIOS, conexiones y puertos por aplicación, caché DNS, tabla ARP y redes Wi-Fi conocidas.</li>
+        <li><strong>Historial y recursos:</strong> comandos ejecutados, unidades mapeadas y recursos compartidos.</li>
+        <li><strong>Sistema, persistencia y logs:</strong> systeminfo, tareas programadas, exportación de los registros de eventos, fichero hosts y árbol de directorios por fecha.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <section class="section section-alt">
+    <p class="section-eyebrow">02 · Sistema y procesos</p>
+    <h2>Fecha, procesos y servicios</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 0;">
+        <li>
+          <h5>Fecha y hora del sistema</h5>
+          <div class="code-block"><pre>date /t &amp; time /t</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig01.png" alt="marca temporal de la adquisición.">
+            <figcaption>Figura 1. date /t &amp; time /t: marca temporal de la adquisición.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> El sistema reporta <strong>13/11/2026, 09:43 p. m.</strong> Esta marca fija el instante en que empezó la adquisición, dato esencial para la línea de tiempo del incidente y la cadena de custodia.</p>
+        </li>
+        <li>
+          <h5>Procesos en ejecución</h5>
+          <div class="code-block"><pre>tasklist</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig02.png" alt="procesos en ejecución con PID, sesión y memoria.">
+            <figcaption>Figura 2. tasklist: procesos en ejecución con PID, sesión y memoria.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Inventario de procesos con su PID, sesión y consumo de memoria: procesos del sistema (System, smss.exe, csrss.exe, wininit.exe, services.exe, lsass.exe, varios svchost.exe) y los de la sesión de consola. Sirve para detectar procesos anómalos y, con el PID, relacionarlos con las conexiones de red.</p>
+        </li>
+        <li>
+          <h5>Servicios: CMD vs. PowerShell</h5>
+          <div class="code-block"><pre>net start          (CMD)
+Get-Service        (PowerShell)</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig03a.png" alt="solo servicios en ejecución, por nombre descriptivo.">
+            <figcaption>Figura 3a. net start (CMD): solo servicios en ejecución, por nombre descriptivo.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad19-img/fig03b.png" alt="todos los servicios con Status, Name y DisplayName.">
+            <figcaption>Figura 3b. Get-Service (PowerShell): todos los servicios con Status, Name y DisplayName.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> <code>net start</code> lista solo los servicios <strong>en ejecución</strong> y por su nombre descriptivo. <code>Get-Service</code> lista <strong>todos</strong>, en ejecución y detenidos, con su estado (Running/Stopped), su nombre corto y su nombre descriptivo. <strong>Análisis:</strong> net start da una vista parcial; Get-Service da el inventario completo, más útil en el triaje forense porque muestra también los servicios detenidos y el nombre real con el que se gestiona cada servicio.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <section class="section">
+    <p class="section-eyebrow">03 · Usuarios</p>
+    <h2>Sesiones activas e historial de usuarios</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 3;">
+        <li>
+          <h5>Usuarios con sesión iniciada</h5>
+          <div class="code-block"><pre>query user</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig04.png" alt="usuarios con sesión iniciada.">
+            <figcaption>Figura 4. query user: usuarios con sesión iniciada.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Hay una sola sesión interactiva: el usuario <code>cns-at2106</code> en la consola (ID 1), <strong>Activo</strong>, con inicio de sesión el 08/10/2026 a las 12:14 p. m.</p>
+        </li>
+        <li>
+          <h5>Usuarios que alguna vez iniciaron sesión</h5>
+          <div class="code-block"><pre>NetUsers.exe /local /history
+net user</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad19-img/fig05.png" alt="historial de inicios de sesión y cuentas locales.">
+            <figcaption>Figura 5. NetUsers /local /history y net user: historial de inicios de sesión y cuentas locales.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> <code>NetUsers /local /history</code> da el historial de inicios de sesión locales: <code>CNS-PF0XXY8C\CNS-AT2106</code>, último logon el 2026/10/08 12:14. Como complemento, <code>net user</code> enumera las cuentas locales: Administrador, CNS-AT2106, DefaultAccount, Invitado y WDAGUtilityAccount.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <section class="section section-alt">
+    <p class="section-eyebrow">04 · Red</p>
+    <h2>Configuración y actividad de red</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 5;">
+        <li>
+          <h5>Información de red</h5>
+          <div class="code-block"><pre>ipconfig /all</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig06.png" alt="configuración de red completa.">
+            <figcaption>Figura 6. ipconfig /all: configuración de red completa.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Host <code>CNS-PF0XXY8C</code>. La conexión activa es Wi-Fi con IP <code>192.168.1.79</code> por DHCP (gateway 192.168.1.1); el adaptador Ethernet está desconectado. Hay además interfaces virtuales de Tailscale, WSL/Hyper-V y VMware (VMnet1/VMnet8). Por cada adaptador se registran la MAC, las direcciones IPv4/IPv6 y los DNS.</p>
+        </li>
+        <li>
+          <h5>Nombres NetBIOS</h5>
+          <div class="code-block"><pre>nbtstat -n</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig07.png" alt="nombres NetBIOS registrados por el equipo.">
+            <figcaption>Figura 7. nbtstat -n: nombres NetBIOS registrados por el equipo.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> La tabla de nombres NetBIOS locales registra <code>CNS-PF0XXY8C</code> con los sufijos &lt;20&gt; y &lt;00&gt; como Único y <code>WORKGROUP &lt;00&gt;</code> como Grupo, todos en estado Registrado, en cada interfaz con NetBIOS sobre TCP/IP.</p>
+        </li>
+        <li>
+          <h5>Conexiones establecidas</h5>
+          <div class="code-block"><pre>netstat -ano | findstr ESTABLISHED</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad19-img/fig08.png" alt="conexiones activas con PID.">
+            <figcaption>Figura 8. netstat -ano | findstr ESTABLISHED: conexiones activas con PID.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Conexiones TCP en estado ESTABLISHED con IP y puerto local y remoto, más el PID del proceso; entre ellas 149.154.175.54:443, 192.168.1.15/16:8009, 40.99.168.226:443 y varias sesiones TLS/443 e IPv6. El PID permite atribuir cada conexión a su proceso.</p>
+        </li>
+        <li>
+          <h5>Aplicaciones y puertos</h5>
+          <div class="code-block"><pre>netstat -anob</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig09.png" alt="ejecutable dueño de cada puerto.">
+            <figcaption>Figura 9. netstat -anob (consola como administrador): ejecutable dueño de cada puerto.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Con la consola como administrador, <code>-b</code> muestra el ejecutable dueño de cada puerto: 135 (RpcSs), 445 (System), 902/912 (vmware-authd), 5040 (CDPSvc), 49664–49669 (svchost.exe, spoolsv.exe), los puertos de tailscaled.exe y las conexiones ESTABLISHED. Así se ve directamente qué aplicación escucha o se conecta en cada puerto, clave para detectar un proceso sospechoso.</p>
+        </li>
+        <li>
+          <h5>Dominios accedidos</h5>
+          <div class="code-block"><pre>ipconfig /displaydns</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig10.png" alt="caché DNS con los dominios resueltos.">
+            <figcaption>Figura 10. ipconfig /displaydns: caché DNS con los dominios resueltos.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> La caché del resolvedor DNS contiene los registros A, AAAA y PTR de los dominios resueltos recientemente. Es una fuente valiosa para reconstruir qué sitios y servicios se contactaron desde el equipo.</p>
+        </li>
+        <li>
+          <h5>Tabla ARP (IP ↔ MAC)</h5>
+          <div class="code-block"><pre>arp -a</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig11.png" alt="correspondencia IP ↔ MAC de los equipos contactados.">
+            <figcaption>Figura 11. arp -a: correspondencia IP ↔ MAC de los equipos contactados.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> La tabla ARP asocia la dirección lógica (IP) con la física (MAC) de los equipos con los que el dispositivo se comunicó recientemente, por cada interfaz. Permite identificar los dispositivos vecinos reales en la LAN.</p>
+        </li>
+        <li>
+          <h5>Redes Wi-Fi conocidas</h5>
+          <div class="code-block"><pre>netsh wlan show profiles</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig12.png" alt="historial de redes Wi-Fi guardadas.">
+            <figcaption>Figura 12. netsh wlan show profiles: historial de redes Wi-Fi guardadas.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Lista los perfiles Wi-Fi guardados, que son el historial de redes a las que se conectó el equipo. Este historial ayuda a ubicar geográficamente el equipo.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <section class="section">
+    <p class="section-eyebrow">05 · Historial y recursos</p>
+    <h2>Comandos ejecutados, unidades y recursos compartidos</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 12;">
+        <li>
+          <h5>Historial del intérprete de comandos</h5>
+          <div class="code-block"><pre>Get-History
+Get-Content $env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig13a.png" alt="historial de la sesión actual de PowerShell.">
+            <figcaption>Figura 13a. Get-History: historial de la sesión actual de PowerShell.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad19-img/fig13b.png" alt="histórico persistente de comandos.">
+            <figcaption>Figura 13b. ConsoleHost_history.txt (PSReadLine): histórico persistente de comandos.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> <code>Get-History</code> solo muestra los comandos de la sesión actual. El histórico persistente está en <code>ConsoleHost_history.txt</code> de PSReadLine, que conserva los comandos que el usuario ejecutó en sesiones anteriores.</p>
+        </li>
+        <li>
+          <h5>Unidades mapeadas</h5>
+          <div class="code-block"><pre>net use</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig14.png" alt="unidades de red mapeadas (ninguna).">
+            <figcaption>Figura 14. net use: unidades de red mapeadas (ninguna).</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Responde <em>"No hay entradas en la lista"</em>: el equipo no tenía unidades de red mapeadas al momento de la adquisición.</p>
+        </li>
+        <li>
+          <h5>Recursos compartidos</h5>
+          <div class="code-block"><pre>net share</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig15.png" alt="recursos compartidos del sistema.">
+            <figcaption>Figura 15. net share: recursos compartidos del sistema.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Solo aparecen los recursos administrativos por defecto de Windows (<code>C$</code>, <code>ADMIN$</code>, <code>IPC$</code>, <code>print$</code>) y la impresora compartida. No hay recursos compartidos anómalos creados por un atacante.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <section class="section section-alt">
+    <p class="section-eyebrow">06 · Sistema, persistencia y logs</p>
+    <h2>Información del equipo, tareas, registros y archivos</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 15;">
+        <li>
+          <h5>Información del equipo</h5>
+          <div class="code-block"><pre>systeminfo</pre></div>
+          <figure class="evidence">
+            <img src="img/parcial 3/actividad19-img/fig16.png" alt="información completa del equipo.">
+            <figcaption>Figura 16. systeminfo: información completa del equipo.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Windows 11 Pro (10.0.26100), host CNS-PF0XXY8C, equipo LENOVO 20HEA00BLM con 16 GB de RAM, instalado el 06/07/2026, último arranque el 08/10/2026 12:14, zona horaria UTC-06:00 (Guadalajara, Ciudad de México), grupo de trabajo WORKGROUP y las revisiones (hotfix) instaladas.</p>
+        </li>
+        <li>
+          <h5>Tareas programadas</h5>
+          <div class="code-block"><pre>schtasks /query /fo TABLE</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig17.png" alt="tareas programadas registradas.">
+            <figcaption>Figura 17. schtasks /query: tareas programadas registradas.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Tareas por carpeta del Programador de tareas: en la raíz MicrosoftEdgeUpdateTask, Opera scheduled Autoupdate, Proton VPN NRPT watchdog, RtHDVBg_Dolby y RTKCPL; además las de Google, Lenovo Power Manager, UDC y Vantage. Las tareas programadas son un mecanismo común de persistencia, por eso conviene revisarlas.</p>
+        </li>
+        <li>
+          <h5>Exportación de los logs del sistema</h5>
+          <div class="code-block"><pre>wevtutil epl System "%USERPROFILE%\Desktop\System.evtx"
+wevtutil epl Application "%USERPROFILE%\Desktop\Application.evtx"
+wevtutil epl Security "%USERPROFILE%\Desktop\Security.evtx"</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig18.png" alt="exportación de los logs System, Application y Security al Escritorio.">
+            <figcaption>Figura 18. wevtutil epl: exportación de los logs System, Application y Security al Escritorio.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Con la consola como administrador se exportaron al Escritorio <code>System.evtx</code>, <code>Application.evtx</code> y <code>Security.evtx</code>; este último exige privilegios elevados. Los archivos quedan preservados para analizarlos después en el Visor de eventos o Event Log Explorer.</p>
+        </li>
+        <li>
+          <h5>Fichero hosts</h5>
+          <div class="code-block"><pre>type C:\Windows\System32\drivers\etc\hosts</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig19.png" alt="contenido del fichero hosts.">
+            <figcaption>Figura 19. type hosts: contenido del fichero hosts.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> Contiene el texto por defecto de Microsoft (todo comentado) y una sección MagicDNS de Tailscale con los nombres de la red privada. No hay entradas de redirección maliciosa, que serían un indicador de compromiso típico en este archivo.</p>
+        </li>
+        <li>
+          <h5>Árbol de directorios por fecha de creación</h5>
+          <div class="code-block"><pre>dir C:\ /t:c /o:d          (recursivo con /s)</pre></div>
+          <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/actividad19-img/fig20.png" alt="directorios ordenados por fecha de creación.">
+            <figcaption>Figura 20. dir /t:c /o:d: directorios ordenados por fecha de creación.</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Resultado:</strong> En <code>C:\</code> las carpetas base datan del 01/04/2024, mientras que <code>Windows.old</code>, <code>DRIVERS</code> e <code>inetpub</code> son del 06/07/2026, fecha de la reinstalación del sistema. Ordenar por fecha de creación ayuda a ubicar archivos y carpetas recientes.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+
+  <!-- Resumen de comandos -->
+  <section class="section">
+    <p class="section-eyebrow">07 · Resumen</p>
+    <h2>Comandos de adquisición utilizados</h2>
+    <div class="panel reveal table-scroll">
+      <table class="qa-table">
+        <thead><tr><th>#</th><th>Comando</th><th>Evidencia que obtiene</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>date /t &amp; time /t</code></td><td>Fecha y hora de inicio de la adquisición</td></tr>
+          <tr><td>2</td><td><code>tasklist</code></td><td>Procesos en ejecución</td></tr>
+          <tr><td>3</td><td><code>net start</code> · <code>Get-Service</code></td><td>Servicios activos / todos los servicios</td></tr>
+          <tr><td>4</td><td><code>query user</code></td><td>Usuarios con sesión iniciada</td></tr>
+          <tr><td>5</td><td><code>NetUsers /local /history</code> · <code>net user</code></td><td>Historial de inicios de sesión y cuentas locales</td></tr>
+          <tr><td>6</td><td><code>ipconfig /all</code></td><td>Configuración de red</td></tr>
+          <tr><td>7</td><td><code>nbtstat -n</code></td><td>Nombres NetBIOS</td></tr>
+          <tr><td>8</td><td><code>netstat -ano | findstr ESTABLISHED</code></td><td>Conexiones establecidas con PID</td></tr>
+          <tr><td>9</td><td><code>netstat -anob</code></td><td>Aplicación dueña de cada puerto</td></tr>
+          <tr><td>10</td><td><code>ipconfig /displaydns</code></td><td>Dominios resueltos recientemente</td></tr>
+          <tr><td>11</td><td><code>arp -a</code></td><td>Relación IP ↔ MAC de los equipos contactados</td></tr>
+          <tr><td>12</td><td><code>netsh wlan show profiles</code></td><td>Redes Wi-Fi a las que se conectó</td></tr>
+          <tr><td>13</td><td><code>Get-History</code> · <code>ConsoleHost_history.txt</code></td><td>Comandos ejecutados</td></tr>
+          <tr><td>14</td><td><code>net use</code></td><td>Unidades de red mapeadas</td></tr>
+          <tr><td>15</td><td><code>net share</code></td><td>Recursos compartidos</td></tr>
+          <tr><td>16</td><td><code>systeminfo</code></td><td>Información general del equipo</td></tr>
+          <tr><td>17</td><td><code>schtasks /query /fo TABLE</code></td><td>Tareas programadas (persistencia)</td></tr>
+          <tr><td>18</td><td><code>wevtutil epl</code></td><td>Logs System, Application y Security (.evtx)</td></tr>
+          <tr><td>19</td><td><code>type …\drivers\etc\hosts</code></td><td>Fichero hosts</td></tr>
+          <tr><td>20</td><td><code>dir C:\ /t:c /o:d</code></td><td>Árbol de directorios por fecha de creación</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!--  DOCUMENTO EN PDF  -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">Producto final</p>
+    <h2>Documento completo</h2>
+
+    <div class="pdf-viewer-wrap reveal">
+      <object data="pdf/Parcial%203/Actividad19.pdf" type="application/pdf">
+        <div class="pdf-fallback">
+          <p>Tu navegador no puede mostrar el PDF embebido.</p>
+          <p><a href="pdf/Parcial%203/Actividad19.pdf" target="_blank" rel="noopener">Abrir el documento en una pestaña nueva</a></p>
+        </div>
+      </object>
+    </div>
+
+    <div class="download-card reveal">
+      <h4>📄 Actividad 19 — Los primeros minutos cuentan</h4>
+      <p>Informe ejecutivo de la adquisición forense en caliente de un sistema Windows: 20 comandos nativos, su uso y su resultado.</p>
+      <a href="pdf/Parcial%203/Actividad19.pdf" class="btn btn-primary" target="_blank" rel="noopener">Abrir PDF</a>
+      <a href="pdf/Parcial%203/Actividad19.pdf" class="btn btn-ghost" download="CasanovaDeLaMadridJuanPablo_Act19.pdf" style="margin-left: 8px;">Descargar PDF</a>
+    </div>
+  </section>
+
+</main>
+
+<!--  FOOTER  -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">csnv <span class="logo-dim">— Portafolio</span></div>
+    <div class="footer-links">
+      <a href="mailto:175329@upslp.edu.mx">Correo</a>
+      <a href="https://github.com/175329" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> Juan Pablo Casanova De La Madrid — csnv. CNO IV, UPSLP.</span>
+    <span class="ssl-badge" title="Sitio servido bajo HTTPS mediante GitHub Pages">sello ssl · https</span>
+  </div>
+</footer>
+
+<button class="scroll-top" id="scrollTopBtn" aria-label="Volver arriba">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
+
+<script src="script.js"></script>
+<script>
+(function() {
+  var btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  function toggle() {
+    if (window.scrollY > 300) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', toggle);
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+</body>
+</html>
