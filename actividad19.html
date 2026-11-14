@@ -345,7 +345,7 @@ figure.evidence.evidence-sm img { width: auto; max-width: 100%; }
 
   <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
 
-  <section class="section section-alt">
+  <section class="section">
     <p class="section-eyebrow">02 · Sistema y procesos</p>
     <h2>Fecha, procesos y servicios</h2>
     <div class="panel reveal">
@@ -388,7 +388,7 @@ Get-Service        (PowerShell)</pre></div>
 
   <div class="torn-divider" aria-hidden="true"></div>
 
-  <section class="section">
+  <section class="section section-alt">
     <p class="section-eyebrow">03 · Usuarios</p>
     <h2>Sesiones activas e historial de usuarios</h2>
     <div class="panel reveal">
@@ -418,9 +418,9 @@ net user</pre></div>
 
   <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
 
-  <section class="section section-alt">
+  <section class="section">
     <p class="section-eyebrow">04 · Red</p>
-    <h2>Configuración y actividad de red</h2>
+    <h2>Configuración, conexiones y puertos</h2>
     <div class="panel reveal">
       <ol class="step-list" style="counter-reset: step 5;">
         <li>
@@ -459,6 +459,17 @@ net user</pre></div>
           </figure>
           <p style="margin-top: 14px;"><strong>Resultado:</strong> Con la consola como administrador, <code>-b</code> muestra el ejecutable dueño de cada puerto: 135 (RpcSs), 445 (System), 902/912 (vmware-authd), 5040 (CDPSvc), 49664–49669 (svchost.exe, spoolsv.exe), los puertos de tailscaled.exe y las conexiones ESTABLISHED. Así se ve directamente qué aplicación escucha o se conecta en cada puerto, clave para detectar un proceso sospechoso.</p>
         </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <section class="section section-alt">
+    <p class="section-eyebrow">04 · Red (continuación)</p>
+    <h2>Dominios, tabla ARP y redes Wi-Fi</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 9;">
         <li>
           <h5>Dominios accedidos</h5>
           <div class="code-block"><pre>ipconfig /displaydns</pre></div>
@@ -490,7 +501,7 @@ net user</pre></div>
     </div>
   </section>
 
-  <div class="torn-divider" aria-hidden="true"></div>
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
 
   <section class="section">
     <p class="section-eyebrow">05 · Historial y recursos</p>
@@ -533,7 +544,7 @@ Get-Content $env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_his
     </div>
   </section>
 
-  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+  <div class="torn-divider" aria-hidden="true"></div>
 
   <section class="section section-alt">
     <p class="section-eyebrow">06 · Sistema, persistencia y logs</p>
@@ -591,7 +602,7 @@ wevtutil epl Security "%USERPROFILE%\Desktop\Security.evtx"</pre></div>
     </div>
   </section>
 
-  <div class="torn-divider" aria-hidden="true"></div>
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
 
 
   <!-- Resumen de comandos -->
@@ -672,7 +683,7 @@ wevtutil epl Security "%USERPROFILE%\Desktop\Security.evtx"</pre></div>
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
 </button>
 
-<script src="script.js"></script>
+<script src="script.js?v=20261113"></script>
 <script>
 (function() {
   var btn = document.getElementById('scrollTopBtn');
