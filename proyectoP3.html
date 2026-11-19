@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PR03 — Operación narcos: expediente Kowhai — csnv :: Portafolio</title>
+<meta name="description" content="PR03: Operación narcos — expediente Kowhai. Análisis forense de la imagen de disco Narcos-1 con FTK Imager: extracción de evidencia, Discord, TrueCrypt, esteganografía, línea de tiempo e hipótesis. Portafolio de Seguridad Informática, UPSLP.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2310161e%22/><text x=%2250%22 y=%2266%22 font-size=%2255%22 fill=%22%23e8a33d%22 font-family=%22monospace%22 text-anchor=%22middle%22>&gt;_</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Literata:opsz,wght@6..72,400;6..72,500;6..72,600&family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.scroll-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cyan);
+  color: var(--bg-main);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background 0.2s;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+}
+.scroll-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.scroll-top:hover {
+  background: #00c4d1;
+  box-shadow: 0 6px 16px rgba(0, 240, 255, 0.4);
+}
+.scroll-top svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Específico de esta página de actividad */
+.meta-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 8px;
+}
+.meta-panel-item { font-family: var(--font-mono); font-size: 0.85rem; }
+.meta-panel-item .meta-label { display: block; font-size: 0.7rem; color: var(--cyan); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em; }
+.meta-panel-item .meta-value { color: var(--text-bright); }
+
+.step-list { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.step-list > li {
+  position: relative;
+  padding: 0 0 28px 44px;
+  border-left: 1px solid var(--border-line);
+  margin-left: 14px;
+}
+.step-list > li:last-child { padding-bottom: 0; }
+.step-list > li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: -15px;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-list p { margin: 0 0 4px; }
+.step-list h5 { margin: 0 0 6px; color: var(--text-bright); font-family: var(--font-display); font-size: 1rem; }
+
+.mitigation-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.mitigation-list li { padding-left: 26px; position: relative; }
+.mitigation-list li::before { content: "›"; position: absolute; left: 0; top: 0; color: var(--cyan); font-weight: bold; font-family: var(--font-mono); }
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--cyan);
+}
+.back-link:hover { text-decoration: underline; }
+
+.download-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+  margin-top: 20px;
+}
+.download-card h4 {
+  font-family: var(--font-display);
+  color: var(--text-bright);
+  margin: 0 0 12px 0;
+}
+.download-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+/* Visor de la infografía en PDF */
+.pdf-viewer-wrap {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 10px;
+  padding: 14px;
+  margin: 0 0 20px;
+}
+.pdf-viewer-wrap object,
+.pdf-viewer-wrap embed {
+  display: block;
+  width: 100%;
+  height: 1400px;
+  max-height: 85vh;
+  border: 0;
+  border-radius: 6px;
+  background: #fff;
+}
+.pdf-fallback {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.pdf-fallback a { color: var(--cyan); }
+
+@media (max-width: 720px) {
+  .pdf-viewer-wrap object,
+  .pdf-viewer-wrap embed {
+    height: 90vh;
+  }
+}
+
+/* Evidencias (capturas) */
+figure.evidence {
+  margin: 16px 0 0;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 10px;
+}
+figure.evidence img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--border-line);
+}
+figure.evidence figcaption {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 10px 4px 2px;
+}
+
+/* Tabla de preguntas y respuestas */
+.qa-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.qa-table th,
+.qa-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-line);
+}
+.qa-table th {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.qa-table td:first-child {
+  font-family: var(--font-mono);
+  color: var(--cyan);
+  width: 36px;
+}
+.qa-table td.qa-answer {
+  font-family: var(--font-mono);
+  color: var(--text-bright);
+  white-space: nowrap;
+}
+.qa-table tr:last-child td { border-bottom: 0; }
+.table-scroll { overflow-x: auto; }
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+@media (max-width: 720px) {
+  .qa-table td.qa-answer { white-space: normal; }
+  .compare-grid { grid-template-columns: 1fr; }
+}
+/* Figuras, tablas y bloques de comandos */
+figure.evidence.evidence-sm { width: fit-content; max-width: 100%; }
+figure.evidence.evidence-sm img { width: auto; max-width: 100%; }
+.fig-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.fig-grid figure.evidence { margin-top: 16px; }
+.step-list code, .qa-table code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--cyan);
+  word-break: break-all;
+}
+.results-table td:first-child {
+  width: 180px;
+  color: var(--cyan);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+.results-table td.hash {
+  font-family: var(--font-mono);
+  color: var(--text-bright);
+  word-break: break-all;
+}
+.match {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border: 1px solid var(--cyan);
+  border-radius: 4px;
+  color: var(--cyan);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.code-block {
+  background: #0a0a0a;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 14px 18px;
+  overflow-x: auto;
+  margin: 10px 0 0;
+}
+.code-block pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--cyan);
+  white-space: pre;
+}
+.qa-table td.qa-answer { white-space: nowrap; }
+.badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+.info-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 24px;
+}
+.info-card h4 { font-family: var(--font-display); color: var(--cyan); margin: 0 0 12px 0; font-size: 1rem; }
+.info-card ul { margin: 0; padding-left: 20px; color: var(--text-main); font-size: 0.95rem; }
+.info-card li { margin-bottom: 8px; }
+.panel h4 { font-family: var(--font-display); color: var(--cyan); margin: 0 0 10px; font-size: 1rem; }
+/* Las rutas largas sin espacios se parten para no desbordar en el celular */
+figure.evidence figcaption, .panel p, .panel li { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+
+<!--  HEADER  -->
+<header class="site-header">
+  <span class="washi-tape tape-header" aria-hidden="true"></span>
+  <div class="header-top">
+    <a class="logo" href="index.html" aria-label="Inicio del portafolio">
+      <span class="logo-mark">csnv</span><span class="logo-dim">— Portafolio</span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Abrir menú de navegación">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="parcial1.html">Parcial 1</a></li>
+        <li><a href="parcial2.html">Parcial 2</a></li>
+        <li><a href="parcial3.html" class="active">Parcial 3</a></li>
+        <li><a href="halloffame.html">Hall of Fame</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="section">
+    <a href="parcial3.html" class="back-link">← Volver a Parcial 3</a>
+
+    <p class="section-eyebrow">Proyecto · PR03</p>
+    <h2>Operación narcos<br><span style="color: var(--cyan)">Expediente Kowhai</span></h2>
+
+    <div class="panel reveal">
+      <p>
+        Una operación internacional de inteligencia alertó a Nueva Zelanda del posible ingreso de drogas: dos pasajeros procedentes de
+        Australia, <strong>John Fredricksen y Jane Esteban</strong>, fueron interceptados en el aeropuerto de Wellington con
+        <strong>un kilogramo de metanfetamina</strong>. Los posibles lugares de entrega eran la <strong>biblioteca de Eastbourne</strong>
+        y un inmueble en <strong>Petone</strong>, donde se aseguraron drogas, armas y una computadora de escritorio relacionada con
+        <strong>Steve Kowhai</strong>.
+      </p>
+      <p>
+        Como parte de una unidad de investigación forense digital, se examinó la imagen forense de ese equipo, <strong>Narcos-1</strong>,
+        para determinar <strong>qué actividades pueden demostrarse a partir del disco</strong>: identificar la evidencia, reconstruir los
+        acontecimientos y establecer los vínculos entre el dispositivo y los hechos.
+      </p>
+      <div class="meta-panel" style="margin-top: 20px;">
+        <div class="meta-panel-item"><span class="meta-label">Evidencia</span><span class="meta-value">Narcos-1 (21 segmentos, 32 GB) · Digital Corpora 2019 Narcos</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Herramientas</span><span class="meta-value">FTK Imager 4.3.1.1 · Python (hashlib, python-registry, SQLite)</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Equipo analizado</span><span class="meta-value">SK-DESKTOP · Windows 10 Pro 1809 · perfil Steve</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Zona horaria</span><span class="meta-value">NZDT (UTC+13) · FTK muestra UTC</span></div>
+        <div class="meta-panel-item"><span class="meta-label">Elaborado por</span><span class="meta-value">Juan Pablo Casanova De La Madrid · 17/11/2026</span></div>
+      </div>
+      <div class="badge-row">
+        <span class="badge">FTK Imager</span>
+        <span class="badge">Integridad MD5 / SHA-1</span>
+        <span class="badge">Registro de Windows</span>
+        <span class="badge">UserAssist</span>
+        <span class="badge">Prefetch</span>
+        <span class="badge">Chrome / Edge</span>
+        <span class="badge">Discord</span>
+        <span class="badge">Windows Timeline</span>
+        <span class="badge">TrueCrypt</span>
+        <span class="badge">Esteganografía</span>
+        <span class="badge">Línea de tiempo</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- QUÉ SE HIZO -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">Qué se hizo</p>
+    <h2>De la imagen forense a la reconstrucción del caso</h2>
+
+    <div class="info-grid reveal">
+      <div class="info-card">
+        <h4>Parte I · Extracción</h4>
+        <ul>
+          <li>Verificación de integridad de la imagen contra el log de adquisición.</li>
+          <li>15 preguntas sobre sistema operativo, navegación, documentos, imágenes y programas.</li>
+          <li>Para cada respuesta: valor exacto, ruta en la imagen, procedimiento y captura.</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>Parte II · Análisis</h4>
+        <ul>
+          <li>Relación entre las imágenes del caso y la logística Brisbane → Wellington.</li>
+          <li>Recuperación de la conversación de Discord desde su caché.</li>
+          <li>Niveles de descarga, instalación, ejecución y uso de TrueCrypt e Image Steganography.</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>Hipótesis y anexos</h4>
+        <ul>
+          <li>Hipótesis sustentada con cuatro hallazgos y una línea de tiempo del 29/01 al 02/02/2019.</li>
+          <li>Anexo A: hashes de los artefactos analizados.</li>
+          <li>Anexo B: salidas de UserAssist, Prefetch, descargas de Chrome y accesos directos.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- INTEGRIDAD -->
+  <section class="section">
+    <p class="section-eyebrow">01 · Integridad</p>
+    <h2>Carga y verificación de la imagen</h2>
+    <div class="panel reveal">
+      <p>La imagen se abrió en modo de solo lectura con FTK Imager (<em>File → Add Evidence Item → Image File → Narcos-1.001</em>), que encadena automáticamente los 21 segmentos. Los archivos originales se conservaron sin modificaciones. Se recalcularon los hashes de los 21 segmentos (32,212,254,720 bytes = 62,914,560 sectores) con Python y con <em>File → Verify Drive/Image</em>, y se compararon con el log de adquisición <code>Narcos-1.001.txt</code> (FTK Imager 4.2.0.13, 17/02/2019).</p>
+      <div class="table-scroll" style="margin-top: 16px;">
+        <table class="qa-table results-table">
+          <thead><tr><th>Fuente</th><th>Hash</th></tr></thead>
+          <tbody>
+            <tr><td>Log · MD5</td><td class="hash">c63a3d19e9c9495b573f45be544e50f9</td></tr>
+            <tr><td>Log · SHA-1</td><td class="hash">4d8e5041f47e0b0fc0eacc85d300661946537418</td></tr>
+            <tr><td>Recalculado · MD5</td><td class="hash">c63a3d19e9c9495b573f45be544e50f9 <span class="match">Match</span></td></tr>
+            <tr><td>Recalculado · SHA-1</td><td class="hash">4d8e5041f47e0b0fc0eacc85d300661946537418 <span class="match">Match</span></td></tr>
+            <tr><td>ZIP descargado · MD5</td><td class="hash">edc7f0999838aa5152e6287db49ffe57</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top: 16px;"><strong>Zona horaria:</strong> FTK Imager muestra las marcas NTFS en UTC; el equipo estaba en New Zealand Standard Time con horario de verano (NZDT = UTC+13), así que a cada valor se le suman 13 horas.</p>
+      <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig01.jpg" alt="Imagen Narcos-1.001 cargada en FTK Imager" loading="lazy">
+            <figcaption>Figura 1. Imagen Narcos-1.001 cargada en FTK Imager: tabla de particiones GPT; la partición de datos es Basic data partition (4), 30104 MB, NTFS.</figcaption>
+          </figure>
+      <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig02.jpg" alt="Resultado de File &amp;gt; Verify Drive/Image en FTK Imager" loading="lazy">
+            <figcaption>Figura 2. Resultado de File &amp;gt; Verify Drive/Image en FTK Imager: MD5 y SHA1 calculados coinciden con los del reporte (Match) y no hay bloques dañados.</figcaption>
+          </figure>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- PARTE I · SO Y NAVEGACIÓN -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">02 · Parte I</p>
+    <h2>Sistema operativo y navegación</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 0;">
+        <li>
+          <h5>Edición y versión de Windows</h5>
+          <p><strong>Respuesta:</strong> Windows 10 Pro, versión 1809, compilación 17763.107, 64 bits. Propietario registrado <strong>Steve</strong>, equipo <code>SK-DESKTOP</code>, instalado el 29/01/2019 08:15:39 NZDT.</p>
+          <p><strong>Artefacto:</strong> <code>C:\Windows\System32\config\SOFTWARE</code> → <code>Microsoft\Windows NT\CurrentVersion</code> (ProductName, EditionID, ReleaseId, CurrentBuild, UBR).</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig03.jpg" alt="Hive SOFTWARE en \Windows\System32\config (artefacto de la respuesta 1)." loading="lazy">
+            <figcaption>Figura 3. Hive SOFTWARE en \Windows\System32\config (artefacto de la respuesta 1).</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig04.jpg" alt="Contenido del hive SOFTWARE" loading="lazy">
+            <figcaption>Figura 4. Contenido del hive SOFTWARE: valor ProductName = "Windows 10 Pro" y ReleaseId "1809" en la clave CurrentVersion.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Carpeta del perfil principal</h5>
+          <p><strong>Respuesta:</strong> <code>C:\Users\Steve</code> (SID …-1001, ProfileImagePath de ProfileList). Es el único perfil de usuario real; Default, Public, All Users y Default User son del sistema.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig05.jpg" alt="Contenido de C" loading="lazy">
+            <figcaption>Figura 5. Contenido de C:\Users: el único perfil de usuario es Steve.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig06.jpg" alt="Contenido de C" loading="lazy">
+            <figcaption>Figura 6. Contenido de C:\Users\Steve (perfil principal).</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Clave UserAssist del perfil principal</h5>
+          <p><strong>Respuesta:</strong> <code>HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\UserAssist</code>, guardada en <code>C:\Users\Steve\NTUSER.DAT</code>. Los registros están en las subclaves <code>{CEBFF5CD-…}\Count</code> y <code>{F4E57C4B-…}\Count</code>, con nombres codificados en ROT13 (decodificados con python-registry).</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig07.jpg" alt="Hive NTUSER.DAT del perfil Steve (firma &quot;regf&quot;)." loading="lazy">
+            <figcaption>Figura 7. Hive NTUSER.DAT del perfil Steve (firma "regf").</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig08.jpg" alt="Nombre de clave &quot;UserAssist&quot; localizado dentro de NTUSER.DAT con la búsqueda de FTK Imager." loading="lazy">
+            <figcaption>Figura 8. Nombre de clave "UserAssist" localizado dentro de NTUSER.DAT con la búsqueda de FTK Imager.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Navegadores con actividad</h5>
+          <p><strong>Google Chrome:</strong> <code>…\Google\Chrome\User Data\Default\History</code> (SQLite; 413 URL y 565 visitas).</p>
+          <p><strong>Microsoft Edge (EdgeHTML):</strong> <code>…\Microsoft\Windows\WebCache\WebCacheV01.dat</code> (base de datos ESE compartida con Internet Explorer).</p>
+          <p>UserAssist corrobora ambos: Chrome con 10 ejecuciones (última el 02/02/2019 15:28:15 NZDT) y Edge con 8 (última el 30/01/2019 10:04:28); Windows Timeline registra páginas abiertas en Edge el 29/01/2019.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig09.jpg" alt="Archivo History del perfil Default de Chrome (cabecera &quot;SQLite format 3&quot;)." loading="lazy">
+            <figcaption>Figura 9. Archivo History del perfil Default de Chrome (cabecera "SQLite format 3").</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig10.jpg" alt="Base de datos WebCacheV01.dat (historial de Microsoft Edge)." loading="lazy">
+            <figcaption>Figura 10. Base de datos WebCacheV01.dat (historial de Microsoft Edge).</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>MD5 del History de Chrome</h5>
+          <p><strong>Respuesta:</strong> <code>f3f979c6dee9fbb7cbdf5818aaa4b723</code> (SHA-1 <code>178c6170cf55e649c7cedd201b4a9ea51a976b0f</code>), obtenido con <em>File → Export File Hash List</em> y comprobado con Python.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig11.jpg" alt="FTK Imager mostrando la lista de hashes que exportó (Export File Hash List)" loading="lazy">
+            <figcaption>Figura 11. FTK Imager mostrando la lista de hashes que exportó (Export File Hash List): hash_Chrome_History.csv, columnas MD5 y SHA1.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig12.jpg" alt="Misma lista desplazada a la derecha" loading="lazy">
+            <figcaption>Figura 12. Misma lista desplazada a la derecha: la ruta corresponde al archivo History del perfil Default de Chrome.</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- PARTE I · DOCUMENTOS -->
+  <section class="section">
+    <p class="section-eyebrow">03 · Parte I</p>
+    <h2>Documentos, imágenes y metadatos</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 5;">
+        <li>
+          <h5>Ruta de airport crystals.jpg</h5>
+          <p><strong>Respuesta:</strong> <code>C:\Users\Steve\Documents\Misc\airport crystals.jpg</code>. La carpeta también contiene dropoff.jpg, flightbookings.PNG y Method run.jpg.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig13.jpg" alt="Contenido de C" loading="lazy">
+            <figcaption>Figura 13. Contenido de C:\Users\Steve\Documents\Misc: airport crystals.jpg, dropoff.jpg, flightbookings.PNG y Method run.jpg.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Creación de airport crystals.jpg</h5>
+          <p><strong>Respuesta:</strong> 31/01/2019 10:25:18 NZDT (Date Created en FTK: 30/01/2019 21:25:18 UTC + 13 h). Tamaño 77,643 bytes.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig14.jpg" alt="Propiedades de airport crystals.jpg" loading="lazy">
+            <figcaption>Figura 14. Propiedades de airport crystals.jpg: Date Created 30/01/2019 09:25:18 p. m. (UTC).</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>MD5 de dropoff.jpg</h5>
+          <p><strong>Respuesta:</strong> <code>7feb763bebe42c3a3464c9ee3bb1d3e8</code> (SHA-1 <code>47ea895261f5b0f6775b0e2c66891067bc816f92</code>), de la lista <code>hash_Documents_Misc.csv</code>.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig15.jpg" alt="FTK Imager mostrando la lista de hashes que exportó (Export File Hash List)" loading="lazy">
+            <figcaption>Figura 15. FTK Imager mostrando la lista de hashes que exportó (Export File Hash List): hash_Documents_Misc.csv; la tercera fila de datos (7feb763b…) corresponde a dropoff.jpg.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig16.jpg" alt="Misma lista desplazada a la derecha" loading="lazy">
+            <figcaption>Figura 16. Misma lista desplazada a la derecha: la tercera fila de datos termina en …\Documents\Misc\dropoff.jpg.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Última modificación de dropoff.jpg</h5>
+          <p><strong>Respuesta:</strong> 02/02/2019 14:06:06 NZDT (01:06:06 UTC + 13 h); creado un segundo antes, a las 14:06:05. Tamaño 177,888 bytes.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig17.jpg" alt="Propiedades de dropoff.jpg" loading="lazy">
+            <figcaption>Figura 17. Propiedades de dropoff.jpg: Date Modified 02/02/2019 01:06:06 a. m. (UTC).</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Imagen de reservaciones de vuelo</h5>
+          <p><strong>Respuesta:</strong> <code>flightbookings.PNG</code>, en <code>C:\Users\Steve\Documents\Misc\</code> (52,971 bytes; creado el 02/02/2019 15:28:44 NZDT). Muestra un itinerario Brisbane (BNE) – Wellington (WLG).</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig18.jpg" alt="flightbookings.PNG en FTK Imager" loading="lazy">
+            <figcaption>Figura 18. flightbookings.PNG en FTK Imager: itinerario de vuelo Brisbane (BNE) – Wellington (WLG).</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>MD5 de Method run.jpg</h5>
+          <p><strong>Respuesta:</strong> <code>69b225bc0ef5a0c003f1e2a6646aaf92</code> (SHA-1 <code>2f9cefcba4f8735bdc852baf572266b32f05ef93</code>). La lista exportada contiene los cuatro archivos de Documents\Misc, cada uno seguido de su Zone.Identifier.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig15.jpg" alt="FTK Imager mostrando la lista de hashes que exportó (Export File Hash List)" loading="lazy">
+            <figcaption>Figura 19. FTK Imager mostrando la lista de hashes que exportó (Export File Hash List): hash_Documents_Misc.csv, columnas MD5 y SHA1 (filas en el orden airport crystals.jpg, dropoff.jpg, flightbookings.PNG, Method run.jpg, cada una seguida de su Zone.Identifier).</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig16.jpg" alt="Misma lista desplazada a la derecha" loading="lazy">
+            <figcaption>Figura 20. Misma lista desplazada a la derecha: final del SHA1 y nombre de cada archivo de Documents\Misc.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig21.jpg" alt="Method run.jpg seleccionado en FTK Imager (vista previa y propiedades)." loading="lazy">
+            <figcaption>Figura 21. Method run.jpg seleccionado en FTK Imager (vista previa y propiedades).</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- PARTE I · PROGRAMAS -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">04 · Parte I</p>
+    <h2>Programas y otros artefactos</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 11;">
+        <li>
+          <h5>MD5 de BNE.png</h5>
+          <p><strong>Respuesta:</strong> <code>dffa98bdd7371d1806adb09db27ba283</code> (SHA-1 <code>0897faa06fbb6e0d678a9497b6f5d330f231362f</code>). Ruta <code>C:\Users\Steve\Downloads\Misc\BNE.png</code> (4,376,793 bytes; creado el 01/02/2019 13:13:19 NZDT).</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig22.jpg" alt="Contenido de C" loading="lazy">
+            <figcaption>Figura 22. Contenido de C:\Users\Steve\Downloads\Misc: BNE.png y DiscordSetup.exe.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig23.jpg" alt="BNE.png seleccionado en FTK Imager (propiedades y vista previa parcial)." loading="lazy">
+            <figcaption>Figura 23. BNE.png seleccionado en FTK Imager (propiedades y vista previa parcial).</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig24.jpg" alt="FTK Imager mostrando la lista de hashes que exportó (Export File Hash List)" loading="lazy">
+            <figcaption>Figura 24. FTK Imager mostrando la lista de hashes que exportó (Export File Hash List): hash_Downloads_Misc.csv, columnas MD5 y SHA1.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig25.jpg" alt="Misma lista desplazada a la derecha" loading="lazy">
+            <figcaption>Figura 25. Misma lista desplazada a la derecha: BNE.png, su Zone.Identifier y DiscordSetup.exe.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Instalador de esteganografía</h5>
+          <p><strong>Respuesta:</strong> <code>Image Steganography 1.5.2 Setup.exe</code> en <code>C:\Users\Steve\Downloads\</code>. MD5 <code>c9b7c382dea6d7f45ae1bf437860cb69</code> (559,616 bytes; creado el 01/02/2019 13:16:32 NZDT).</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig26.jpg" alt="Instalador Image Steganography 1.5.2 Setup.exe en Downloads (ejecutable PE, cabecera &quot;MZ&quot;)." loading="lazy">
+            <figcaption>Figura 26. Instalador Image Steganography 1.5.2 Setup.exe en Downloads (ejecutable PE, cabecera "MZ").</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Instalador de cifrado</h5>
+          <p><strong>Respuesta:</strong> <code>TrueCrypt Setup 7.1a.exe</code> en <code>C:\Users\Steve\Downloads\</code>. MD5 <code>7a23ac83a0856c352025a6f7c9cc1526</code> (3,466,248 bytes; creado el 30/01/2019 12:27:43 NZDT).</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig27.jpg" alt="FTK Imager mostrando la lista de hashes que exportó (Export File Hash List)" loading="lazy">
+            <figcaption>Figura 27. FTK Imager mostrando la lista de hashes que exportó (Export File Hash List): hash_Downloads.csv, columnas MD5 y SHA1.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig28.jpg" alt="Misma lista desplazada a la derecha" loading="lazy">
+            <figcaption>Figura 28. Misma lista desplazada a la derecha: Image Steganography 1.5.2 Setup.exe y TrueCrypt Setup 7.1a.exe.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig29.jpg" alt="Instalador TrueCrypt Setup 7.1a.exe en Downloads." loading="lazy">
+            <figcaption>Figura 29. Instalador TrueCrypt Setup 7.1a.exe en Downloads.</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>Caché de Discord y Windows Timeline</h5>
+          <p><strong>Discord:</strong> <code>C:\Users\Steve\AppData\Roaming\Discord\Cache</code> (182 elementos, modificaciones hasta el 02/02/2019 15:39 NZDT).</p>
+          <p><strong>Windows Timeline:</strong> <code>C:\Users\Steve\AppData\Local\ConnectedDevicesPlatform\2418c0082017486a\ActivitiesCache.db</code> (SQLite, 395 registros en la tabla Activity).</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig30.jpg" alt="Caché de Discord en AppData\Roaming\Discord\Cache." loading="lazy">
+            <figcaption>Figura 30. Caché de Discord en AppData\Roaming\Discord\Cache.</figcaption>
+          </figure>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig31.jpg" alt="ActivitiesCache.db en AppData\Local\ConnectedDevicesPlatform\2418c0082017486a (cabecera &quot;SQLite format 3&quot;)." loading="lazy">
+            <figcaption>Figura 31. ActivitiesCache.db en AppData\Local\ConnectedDevicesPlatform\2418c0082017486a (cabecera "SQLite format 3").</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- PARTE II · LOGÍSTICA -->
+  <section class="section">
+    <p class="section-eyebrow">05 · Parte II</p>
+    <h2>Lugares, desplazamientos y logística</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 15;">
+        <li>
+          <h5>flightbookings, BNE.png y dropoff.jpg</h5>
+          <p><strong>flightbookings.PNG:</strong> itinerario para dos adultos. Ida el 16/02/2019 Brisbane → Wellington (Virgin Australia, directo) y regreso el 23/02/2019 con Qantas vía Auckland; total AU$1,327.82. Chrome lo descargó el 02/02/2019 15:28:26 NZDT desde cdn.discordapp.com como el adjunto <em>Steve_K.PNG</em>, que <em>heresjohnny1</em> envió a las 14:57:33 con el texto <em>"See you soon. John out"</em>. Ambos archivos pesan 52,971 bytes.</p>
+          <p><strong>BNE.png:</strong> fotografía de una ciudad al atardecer con un puente iluminado, compatible con Brisbane (BNE es el código IATA de su aeropuerto). Se descargó el 01/02/2019 13:13:19 NZDT desde la bandeja de ProtonMail de la cuenta <code>crayfish1980@protonmail.com</code>.</p>
+          <p><strong>dropoff.jpg:</strong> captura de Google Maps de <strong>Eastbourne Library</strong> (38 Rimu St, Lower Hutt), creada el 02/02/2019 14:06:05 NZDT, segundos después de consultar ese lugar en Chrome (14:05:17–14:05:24) y abrir Snip &amp; Sketch (14:05:31).</p>
+          <p><strong>Interpretación:</strong> los tres archivos apuntan a una misma logística: origen en Brisbane, llegada de dos personas a Wellington a mediados de febrero y un punto de entrega en la biblioteca de Eastbourne. Esto coincide con los hechos del caso, y los tres archivos llegaron o se generaron en dos días por canales distintos (correo cifrado, Discord y capturas propias).</p>
+          <div class="fig-grid">
+            <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig32.jpg" alt="flightbookings.PNG extraído de la imagen (contenido completo)." loading="lazy">
+            <figcaption>Figura 32. flightbookings.PNG extraído de la imagen (contenido completo).</figcaption>
+          </figure>
+            <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig34.jpg" alt="dropoff.jpg extraído de la imagen" loading="lazy">
+            <figcaption>Figura 34. dropoff.jpg extraído de la imagen: Eastbourne Library en Google Maps.</figcaption>
+          </figure>
+          </div>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig33.jpg" alt="BNE.png extraído de la imagen (vista reducida)." loading="lazy">
+            <figcaption>Figura 33. BNE.png extraído de la imagen (vista reducida).</figcaption>
+          </figure>
+        </li>
+        <li>
+          <h5>airport crystals.jpg y Method run.jpg</h5>
+          <p><strong>Lo observado:</strong> <em>airport crystals.jpg</em> es una ruta de Google Maps entre Eastbourne y el aeropuerto de Wellington, pasando por Petone (47 min, 31.6 km). <em>Method run.jpg</em> enlaza Wainuiomata, Eastbourne, Stokes Valley y Naenae (54 min, 42.5 km), con la palabra "Home" escrita a mano en rojo junto a Eastbourne.</p>
+          <div class="table-scroll" style="margin: 14px 0;">
+            <table class="qa-table">
+              <thead><tr><th>31/01/2019 (NZDT)</th><th>Fuente</th><th>Evento</th></tr></thead>
+              <tbody>
+                <tr><td class="qa-answer">10:17:29–10:20:15</td><td>Chrome History</td><td>Google Maps: Stokes Valley, Eastbourne, Wainuiomata, Naenae, Cannons Creek</td></tr>
+                <tr><td class="qa-answer">10:20:29</td><td>Prefetch</td><td>SCREENSKETCH.EXE (Snip &amp; Sketch) en ejecución</td></tr>
+                <tr><td class="qa-answer">10:21:24</td><td>NTFS ($SI)</td><td>Se crea Method run.jpg (modificado 10:22:24)</td></tr>
+                <tr><td class="qa-answer">10:24:13–10:24:41</td><td>Chrome History</td><td>Google Maps: Wellington International Airport; ruta Eastbourne – aeropuerto</td></tr>
+                <tr><td class="qa-answer">10:24:58</td><td>Prefetch</td><td>SCREENSKETCH.EXE en ejecución</td></tr>
+                <tr><td class="qa-answer">10:25:18</td><td>NTFS ($SI)</td><td>Se crea airport crystals.jpg</td></tr>
+                <tr><td class="qa-answer">15:54:56</td><td>Chrome History</td><td>Búsqueda "crystal meth"</td></tr>
+                <tr><td class="qa-answer">15:57:16–15:59:19</td><td>Chrome History</td><td>Búsquedas "drug paraphernalia", "drug paraphernalia meth", "gangs nz drugs"</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>Interpretación:</strong> las dos imágenes son capturas hechas en el propio equipo segundos después de planear las rutas en el navegador; no son archivos recibidos de terceros. Su finalidad más sostenible es planear desplazamientos: un trayecto entre el aeropuerto y Eastbourne ("crystals" es una forma coloquial de llamar a la metanfetamina en cristal) y un circuito por suburbios de Lower Hutt con inicio o fin en "Home", posiblemente una ronda de entregas.</p>
+          <div class="fig-grid">
+            <figure class="evidence evidence-sm">
+            <img src="img/parcial 3/proyecto3-img/fig35.jpg" alt="airport crystals.jpg extraído de la imagen." loading="lazy">
+            <figcaption>Figura 35. airport crystals.jpg extraído de la imagen.</figcaption>
+          </figure>
+            <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig36.jpg" alt="Method run.jpg extraído de la imagen (anotación manuscrita &quot;Home&quot;)." loading="lazy">
+            <figcaption>Figura 36. Method run.jpg extraído de la imagen (anotación manuscrita "Home").</figcaption>
+          </figure>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- PARTE II · DISCORD -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">06 · Parte II</p>
+    <h2>Discord: presencia, uso y conversación recuperada</h2>
+    <div class="panel reveal">
+      <ol class="step-list" style="counter-reset: step 17;">
+        <li>
+          <h5>Evidencia de presencia y uso de Discord</h5>
+          <ul class="mitigation-list" style="margin: 8px 0 14px;">
+            <li><strong>Descarga y ejecución del instalador:</strong> <code>Downloads\Misc\DiscordSetup.exe</code> (29/01/2019 09:56:03 NZDT), ejecutado a las 09:56:33 según UserAssist.</li>
+            <li><strong>Instalación:</strong> <code>AppData\Local\Discord</code> (app-0.0.304), clave de desinstalación en NTUSER.DAT, acceso directo en el Escritorio y valor "Discord" en la clave Run (inicio automático).</li>
+            <li><strong>Prefetch:</strong> cuatro archivos DISCORD.EXE-*.pf; el principal registra 20 ejecuciones, la última el 02/02/2019 15:38:39 NZDT.</li>
+            <li><strong>UserAssist:</strong> 2 ejecuciones desde el acceso directo y ≈24.9 min en primer plano; última el 02/02/2019 15:33:54 NZDT.</li>
+            <li><strong>Chrome:</strong> descarga de un adjunto alojado en cdn.discordapp.com (Steve_K.PNG → flightbookings.PNG).</li>
+          </ul>
+          <p><strong>Mensajes recuperados de la caché:</strong> <code>Discord\Cache\data_2</code> (MD5 <code>d4ad7f2c519566873a05ee5b1c447d14</code>) contiene, comprimida con gzip en el offset 245760, la respuesta de la API del canal 539550615072800768. Son 16 mensajes del 29/01 al 02/02/2019 entre <strong>crayfish1980#5175</strong> y <strong>heresjohnny1#5340</strong>. FTK Imager no descomprime la caché, así que el bloque se extrajo con un script de Python y el resultado se abrió en FTK Imager.</p>
+          <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig37.jpg" alt="Mensajes del canal de Discord extraídos de Cache\data_2 (archivo descomprimido discord_data_2_offset245760_descomprimido.txt), vistos en FTK Imager. Horas en UTC (NZDT = UTC+13)." loading="lazy">
+            <figcaption>Figura 37. Mensajes del canal de Discord extraídos de Cache\data_2 (archivo descomprimido discord_data_2_offset245760_descomprimido.txt), vistos en FTK Imager. Horas en UTC (NZDT = UTC+13).</figcaption>
+          </figure>
+          <p style="margin-top: 14px;"><strong>Interpretación:</strong> Discord se descargó, instaló y usó de forma interactiva en el perfil Steve. La caché conserva una conversación sobre una "entrega" a Wellington, un proveedor nuevo, el envío de una imagen oculta con esteganografía y un adjunto idéntico en tamaño a flightbookings.PNG. El alias <em>crayfish1980</em> coincide con la cuenta de ProtonMail usada en el equipo, y el otro interlocutor firma como "John". Parte de las 20 ejecuciones del Prefetch se explica por el inicio automático en cada sesión.</p>
+          <div class="fig-grid">
+            <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig38.jpg" alt="Archivos Prefetch DISCORD.EXE-*.pf en C" loading="lazy">
+            <figcaption>Figura 38. Archivos Prefetch DISCORD.EXE-*.pf en C:\Windows\Prefetch.</figcaption>
+          </figure>
+            <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig39.jpg" alt="Discord instalado en C" loading="lazy">
+            <figcaption>Figura 39. Discord instalado en C:\Users\Steve\AppData\Local\Discord (app-0.0.304, Update.exe, SquirrelSetup.log).</figcaption>
+          </figure>
+          </div>
+          <div class="fig-grid">
+            <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig40.jpg" alt="Escritorio del perfil Steve" loading="lazy">
+            <figcaption>Figura 40. Escritorio del perfil Steve: accesos directos Discord.lnk e Image Steganography.lnk.</figcaption>
+          </figure>
+            <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig41.jpg" alt="Archivo data_2 de la caché de Discord (AppData\Roaming\Discord\Cache), que contiene la respuesta de la API con los mensajes del canal." loading="lazy">
+            <figcaption>Figura 41. Archivo data_2 de la caché de Discord (AppData\Roaming\Discord\Cache), que contiene la respuesta de la API con los mensajes del canal.</figcaption>
+          </figure>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- PARTE II · CIFRADO Y ESTEGANOGRAFÍA -->
+  <section class="section">
+    <p class="section-eyebrow">07 · Parte II</p>
+    <h2>Herramientas de cifrado y esteganografía</h2>
+    <div class="panel reveal">
+      <p>El análisis distingue cuatro niveles: <strong>descarga, instalación, ejecución y uso efectivo</strong>. Una descarga no equivale a una ejecución, y una ejecución no equivale a haber cifrado u ocultado información.</p>
+      <div class="table-scroll" style="margin-top: 16px;">
+        <table class="qa-table">
+          <thead><tr><th>Nivel</th><th>TrueCrypt 7.1a (cifrado) · 30/01/2019</th><th>Image Steganography 1.5.2 · 01/02/2019</th></tr></thead>
+          <tbody>
+            <tr><td class="qa-answer">Descarga</td><td>Búsqueda "truecrypt" (12:26:30) y descarga desde softpedia.com (12:27:43) en la tabla downloads de Chrome; archivo en Downloads.</td><td>Búsqueda "image steganography download" (13:15:04) y descarga desde sourceforge.net (13:16:32); archivo en Downloads.</td></tr>
+            <tr><td class="qa-answer">Instalación</td><td>UserAssist (12:28:14) y Prefetch del instalador (12:28:17); carpeta <code>C:\Program Files\TrueCrypt</code> con sus controladores (12:28:23) y clave de desinstalación (12:28:24).</td><td>UserAssist y Prefetch del instalador (13:16:46); programa en <code>AppData\Roaming\CPascoe\Image Steganography</code> y acceso directo en el Escritorio (13:16:49).</td></tr>
+            <tr><td class="qa-answer">Ejecución</td><td>UserAssist: 1 ejecución (12:31:23), ≈2 min en primer plano; Prefetch TRUECRYPT.EXE (12:31:25) y TRUECRYPT FORMAT.EXE, el asistente de creación de volúmenes (12:31:29); Configuration.xml modificado a las 12:31:46.</td><td>Prefetch IMAGE STEGANOGRAPHY.EXE: 1 ejecución (13:16:56); UserAssist ≈1.8 min en primer plano con contador en 0, compatible con abrirse al terminar la instalación.</td></tr>
+            <tr><td class="qa-answer">Uso efectivo</td><td><strong>Hay indicios, pero no prueba directa.</strong> <code>Recent\secret.lnk</code> apunta a <code>Documents\secret</code>, un archivo sin extensión de exactamente 5 MB creado 93 s después de abrir el asistente (12:33:02) y hoy borrado. A las 12:44:49 se abrió <em>Memo Things.odt</em>, que ya no está, y en Discord se mencionaba "a document" para enviar. Sin el archivo no puede confirmarse que fuera un volumen TrueCrypt ni qué contenía.</td><td><strong>Hay indicios, pero no prueba directa.</strong> 13:01:54 "John" avisa que ocultó una imagen y envía la contraseña por correo; 13:13:19 se descarga BNE.png de ProtonMail; 13:16:56 se ejecuta la herramienta; 13:19:12 se crea <code>Downloads\Misc\package.jpg</code> (según <code>Recent\package.lnk</code>), hoy borrado. No se recuperó package.jpg ni se decodificó BNE.png (falta la contraseña), así que el contenido oculto no está verificado.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="fig-grid" style="margin-top: 8px;">
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig42.jpg" alt="Instalación de TrueCrypt en C" loading="lazy">
+            <figcaption>Figura 42. Instalación de TrueCrypt en C:\Program Files\TrueCrypt.</figcaption>
+          </figure>
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig43.jpg" alt="Prefetch de TRUECRYPT SETUP 7.1A.EXE, TRUECRYPT.EXE y TRUECRYPT FORMAT.EXE." loading="lazy">
+            <figcaption>Figura 43. Prefetch de TRUECRYPT SETUP 7.1A.EXE, TRUECRYPT.EXE y TRUECRYPT FORMAT.EXE.</figcaption>
+          </figure>
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig44.jpg" alt="Recent\secret.lnk" loading="lazy">
+            <figcaption>Figura 44. Recent\secret.lnk: acceso directo a C:\Users\Steve\Documents\secret (archivo que ya no existe en la carpeta).</figcaption>
+          </figure>
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig45.jpg" alt="AppData\Roaming del perfil Steve" loading="lazy">
+            <figcaption>Figura 45. AppData\Roaming del perfil Steve: carpetas CPascoe e Image_Steganography (esteganografía), TrueCrypt y Discord.</figcaption>
+          </figure>
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig46.jpg" alt="Prefetch del instalador y del ejecutable de Image Steganography." loading="lazy">
+            <figcaption>Figura 46. Prefetch del instalador y del ejecutable de Image Steganography.</figcaption>
+          </figure>
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig47.jpg" alt="Recent\package.lnk" loading="lazy">
+            <figcaption>Figura 47. Recent\package.lnk: acceso directo a Downloads\Misc\package.jpg (archivo que ya no existe en la carpeta).</figcaption>
+          </figure>
+      </div>
+      <p style="margin-top: 16px;"><strong>Limpieza:</strong> la papelera del usuario contiene tres imágenes eliminadas el 01/02/2019 15:48:41 NZDT, que por tamaño corresponden a las descargadas el 31/01 (620x349.jpg, price-meth-bust-4.jpg y eight_col_patches_crp.jpg), y CCleaner se ejecutó a las 15:56. Esto indica limpieza de material, sin que pueda afirmarse el motivo.</p>
+      <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig48.jpg" alt="Papelera de reciclaje del perfil Steve" loading="lazy">
+            <figcaption>Figura 48. Papelera de reciclaje del perfil Steve: tres imágenes eliminadas ($R…jpg) y sus metadatos ($I…jpg).</figcaption>
+          </figure>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!-- PARTE II · HIPÓTESIS -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">08 · Parte II</p>
+    <h2>Hipótesis y línea de tiempo</h2>
+    <div class="panel reveal">
+      <p><strong>Hipótesis:</strong> el equipo <code>SK-DESKTOP</code> (perfil Steve) se utilizó entre el 29/01 y el 02/02/2019 para acordar y planear la logística de una entrega de droga desde Brisbane hacia Wellington: negociación por Discord, recepción de información de viaje, definición de un punto de entrega y de rutas locales, y uso de medios para ocultar información.</p>
+      <ul class="mitigation-list" style="margin-top: 16px;">
+        <li><strong>Hallazgo 1:</strong> la caché de Discord conserva la conversación con "John": se pide una "delivery" de "10 keys" a Wellington y se acuerda empezar con 1, lo que coincide con el kilogramo asegurado en el aeropuerto. El 02/02 "John" envía el itinerario Brisbane → Wellington del 16/02/2019 para dos adultos.</li>
+        <li><strong>Hallazgo 2:</strong> dropoff.jpg (Eastbourne Library) se generó minutos después de buscar "best places to trade drugs", "wellington libraries" y "eastbourne library" (02/02/2019, 13:56–14:05 NZDT); la biblioteca es uno de los lugares de entrega del caso.</li>
+        <li><strong>Hallazgo 3:</strong> airport crystals.jpg y Method run.jpg son capturas propias de rutas entre el aeropuerto, Eastbourne ("Home") y Lower Hutt, acompañadas de búsquedas como "crystal meth" y "gangs nz drugs" en Chrome y, según Windows Timeline, "cutting drugs", "how to launder money" y "drug routes in wellington" en Edge.</li>
+        <li><strong>Hallazgo 4:</strong> TrueCrypt e Image Steganography se instalaron y ejecutaron en momentos que coinciden con la conversación, y quedan rastros de archivos eliminados ("secret", Memo Things.odt, package.jpg, imágenes en la papelera) y de CCleaner.</li>
+      </ul>
+      <div class="table-scroll" style="margin-top: 20px;">
+        <table class="qa-table">
+          <thead><tr><th>Fecha y hora (NZDT)</th><th>Hecho</th><th>Fuente</th></tr></thead>
+          <tbody>
+            <tr><td class="qa-answer">29/01 09:56</td><td>Se instala Discord</td><td>UserAssist, Prefetch</td></tr>
+            <tr><td class="qa-answer">29/01 10:29</td><td>crayfish1980: "Need to get a new delivery"</td><td>Caché de Discord</td></tr>
+            <tr><td class="qa-answer">29/01 11:58–14:11</td><td>Búsquedas: cutting drugs, launder money, drug routes</td><td>Windows Timeline (Edge)</td></tr>
+            <tr><td class="qa-answer">30/01 11:58–12:10</td><td>Se acuerda empezar con 1 de "10 keys" a Wellington</td><td>Caché de Discord</td></tr>
+            <tr><td class="qa-answer">30/01 12:27–12:31</td><td>Descarga, instalación y ejecución de TrueCrypt</td><td>Chrome, UserAssist, Prefetch</td></tr>
+            <tr><td class="qa-answer">30/01 12:33</td><td>Se crea Documents\secret (5 MB, hoy borrado)</td><td>Recent\secret.lnk</td></tr>
+            <tr><td class="qa-answer">31/01 10:17–10:25</td><td>Rutas en Google Maps; Method run.jpg y airport crystals.jpg</td><td>Chrome, NTFS</td></tr>
+            <tr><td class="qa-answer">31/01 15:54–15:59</td><td>Búsquedas: crystal meth, drug paraphernalia, gangs nz drugs</td><td>Chrome History</td></tr>
+            <tr><td class="qa-answer">01/02 13:01–13:13</td><td>"John" envía imagen oculta y contraseña por correo; BNE.png</td><td>Caché de Discord, Chrome</td></tr>
+            <tr><td class="qa-answer">01/02 13:16–13:19</td><td>Image Steganography instalado y ejecutado; package.jpg</td><td>Prefetch, Recent\package.lnk</td></tr>
+            <tr><td class="qa-answer">01/02 15:48–15:56</td><td>Tres imágenes a la papelera; se ejecuta CCleaner</td><td>$Recycle.Bin, Prefetch</td></tr>
+            <tr><td class="qa-answer">02/02 13:56–14:06</td><td>Búsqueda de lugares de entrega; dropoff.jpg</td><td>Chrome, NTFS</td></tr>
+            <tr><td class="qa-answer">02/02 14:57–15:28</td><td>"John" envía Steve_K.PNG; se guarda flightbookings.PNG</td><td>Caché de Discord, Chrome</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="torn-divider torn-divider-alt" aria-hidden="true"></div>
+
+  <!-- ANEXOS -->
+  <section class="section">
+    <p class="section-eyebrow">09 · Anexos</p>
+    <h2>Hashes y salidas de los artefactos</h2>
+    <div class="panel reveal">
+      <h4>Anexo A · Hashes de los artefactos analizados</h4>
+      <p>Cada artefacto (SOFTWARE y su flujo $DSC, NTUSER.DAT, History de Chrome, WebCacheV01.dat, ActivitiesCache.db y data_2 de Discord) se exportó con <em>File → Export File Hash List</em> y las líneas se reunieron en <code>hash_Anexo_A_artefactos.csv</code>. Los valores coinciden con los calculados con Python.</p>
+      <div class="fig-grid">
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig49.jpg" alt="FTK Imager mostrando hash_Anexo_A_artefactos.csv" loading="lazy">
+            <figcaption>Figura 49. FTK Imager mostrando hash_Anexo_A_artefactos.csv: columnas MD5 y SHA1 de los artefactos analizados.</figcaption>
+          </figure>
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig50.jpg" alt="Misma lista desplazada a la derecha" loading="lazy">
+            <figcaption>Figura 50. Misma lista desplazada a la derecha: ruta de cada artefacto dentro de la imagen.</figcaption>
+          </figure>
+      </div>
+      <h4 style="margin-top: 28px;">Anexo B · Salidas de los artefactos de actividad (NZDT)</h4>
+      <p>FTK Imager no decodifica el registro, Prefetch, la base de datos de Chrome ni los accesos directos. Por eso se analizaron con scripts de Python (python-registry, descompresión de Prefetch, consulta SQLite y lectura de .lnk), y cada salida se guardó como texto y se abrió en FTK Imager para la captura.</p>
+      <div class="fig-grid">
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig51.jpg" alt="UserAssist decodificado del perfil Steve" loading="lazy">
+            <figcaption>Figura 51. UserAssist decodificado del perfil Steve: AnexoB_1_UserAssist.txt (salida del script de análisis guardada en Evidencia_PR03 y abierta en FTK Imager; horas en NZDT).</figcaption>
+          </figure>
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig52.jpg" alt="Ejecuciones registradas en Prefetch" loading="lazy">
+            <figcaption>Figura 52. Ejecuciones registradas en Prefetch: AnexoB_2_Prefetch.txt (salida del script de análisis guardada en Evidencia_PR03 y abierta en FTK Imager; horas en NZDT).</figcaption>
+          </figure>
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig53.jpg" alt="Descargas de Chrome (tabla downloads de History)" loading="lazy">
+            <figcaption>Figura 53. Descargas de Chrome (tabla downloads de History): AnexoB_3_Chrome_downloads.txt (salida del script de análisis guardada en Evidencia_PR03 y abierta en FTK Imager; horas en NZDT).</figcaption>
+          </figure>
+        <figure class="evidence">
+            <img src="img/parcial 3/proyecto3-img/fig54.jpg" alt="Destinos de los accesos directos de Recent" loading="lazy">
+            <figcaption>Figura 54. Destinos de los accesos directos de Recent: AnexoB_4_Recent_lnk.txt (salida del script de análisis guardada en Evidencia_PR03 y abierta en FTK Imager; horas en NZDT).</figcaption>
+          </figure>
+      </div>
+      <h4 style="margin-top: 28px;">Bibliografía</h4>
+      <ul class="mitigation-list" style="margin-top: 10px;">
+        <li>Garfinkel, S., Farrell, P., Roussev, V., &amp; Dinolt, G. (2009). <em>Bringing science to digital forensics with standardized forensic corpora.</em> DFRWS, Montreal.</li>
+        <li>Digital Corpora. (2019). <em>2019 Narcos</em> [escenario forense; imagen Narcos-1 y volcado de memoria Narcos-Mem-1].</li>
+        <li>AccessData. (2019). <em>FTK Imager</em> (versión 4.3.1.1) [software].</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="torn-divider" aria-hidden="true"></div>
+
+  <!--  DOCUMENTO  -->
+  <section class="section section-alt">
+    <p class="section-eyebrow">Producto final</p>
+    <h2>Documento completo</h2>
+
+    <div class="pdf-viewer-wrap reveal">
+      <object data="pdf/Parcial%203/PR03.pdf" type="application/pdf">
+        <div class="pdf-fallback">
+          <p>Tu navegador no puede mostrar el PDF embebido.</p>
+          <p><a href="pdf/Parcial%203/PR03.pdf" target="_blank" rel="noopener">Abrir el documento en una pestaña nueva</a></p>
+        </div>
+      </object>
+    </div>
+
+    <div class="download-card reveal">
+      <h4>📄 PR03 — Operación narcos: expediente Kowhai</h4>
+      <p>Informe forense completo de la imagen Narcos-1: extracción de evidencia (Parte I), análisis del caso (Parte II), hipótesis, línea de tiempo y anexos.</p>
+      <a href="pdf/Parcial%203/PR03.pdf" class="btn btn-primary" target="_blank" rel="noopener">Abrir PDF</a>
+      <a href="pdf/Parcial%203/PR03.pdf" class="btn btn-ghost" download="CasanovaDeLaMadridJuanPablo_PR03.pdf" style="margin-left: 8px;">Descargar PDF</a>
+      <a href="docx/Parcial%203/CasanovaDeLaMadridJuanPablo_PR03.docx" class="btn btn-ghost" download style="margin-left: 8px;">Descargar Word</a>
+    </div>
+  </section>
+
+</main>
+
+<!--  FOOTER  -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">csnv <span class="logo-dim">— Portafolio</span></div>
+    <div class="footer-links">
+      <a href="mailto:175329@upslp.edu.mx">Correo</a>
+      <a href="https://github.com/175329" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> Juan Pablo Casanova De La Madrid — csnv. CNO IV, UPSLP.</span>
+    <span class="ssl-badge" title="Sitio servido bajo HTTPS mediante GitHub Pages">sello ssl · https</span>
+  </div>
+</footer>
+
+<button class="scroll-top" id="scrollTopBtn" aria-label="Volver arriba">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+</button>
+
+<script src="script.js?v=20261113"></script>
+<script>
+(function() {
+  var btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  function toggle() {
+    if (window.scrollY > 300) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', toggle);
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+</body>
+</html>
